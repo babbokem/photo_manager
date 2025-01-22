@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invia Codice di Accesso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Invia Codice di Accesso</h1>
+        <p class="text-center">Codice di Accesso: <strong>{{ event.access_code }}</strong></p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="recipients" class="form-label">Destinatari (separati da virgola)</label>
+                <textarea class="form-control" id="recipients" name="recipients" rows="4" placeholder="esempio1@email.com, esempio2@email.com"></textarea>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Invia Email</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Annulla</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

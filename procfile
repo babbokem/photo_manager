@@ -1,0 +1,4 @@
+web: gunicorn photo_manager.wsgi --log-file -
+
+
+

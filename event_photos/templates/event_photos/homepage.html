@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benvenuto</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .hero {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+        }
+        .hero img {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            margin-top: 30px;
+        }
+        .btn-custom {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Benvenuto nel tuo sito di gestione foto!</h1>
+            <img src="/static/logo.png" alt="Logo">
+            <p>Gestisci i tuoi eventi fotografici con facilità.</p>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="text-center">
+            <p>Ciao, <strong>{{ user.username }}</strong>!</p>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="form-container text-center">
+            <form action="{% url 'access_event' %}" method="post" class="d-inline-block">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <input type="text" id="access_code" name="access_code" class="form-control" placeholder="Codice evento" required>
+                </div>
+                <button type="submit" class="btn btn-custom">Accedi</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    <div class="container mt-5">
+        <h2 class="text-center">Progetti Recenti</h2>
+        <div class="row">
+            {% for event in events %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.name }}</h5>
+                        <p class="card-text">Creato il: {{ event.created_at }}</p>
+                        <a href="{% url 'event_photos' event.id %}" class="btn btn-primary">Visualizza</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">Nessun progetto disponibile.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

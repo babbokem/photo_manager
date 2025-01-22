@@ -1,0 +1,100 @@
+**Informativa sulla Privacy ai sensi del Regolamento (UE) 2016/679 (GDPR)**
+
+Ultimo aggiornamento: [DATA]
+
+---
+
+**1. Titolare del trattamento**  
+[NOME DEL FOTOGRAFO O AZIENDA]  
+Indirizzo: [INDIRIZZO COMPLETO]  
+Email: [EMAIL DI CONTATTO]  
+
+---
+
+**2. Tipologie di dati raccolti**  
+Durante la navigazione sul nostro sito web e l'acquisto delle foto, raccogliamo i seguenti dati personali:
+
+- Nome e cognome
+- Indirizzo email
+- Indirizzo IP
+- Dati di pagamento (gestiti da fornitori terzi come Stripe)
+- Foto associate all'account
+
+I dati vengono raccolti quando l'utente si registra, effettua un acquisto o utilizza il nostro sito web.
+
+---
+
+**3. Finalità del trattamento**  
+I dati personali raccolti vengono trattati per le seguenti finalità:
+
+- Elaborazione degli ordini e gestione dei pagamenti.
+- Invio di comunicazioni relative all'acquisto.
+- Conformità a obblighi fiscali e contabili.
+- Prevenzione di frodi e abusi.
+- Miglioramento dell'esperienza utente e analisi statistiche (cookie e strumenti di analisi).
+
+---
+
+**4. Base giuridica del trattamento**  
+Il trattamento dei dati si basa su:
+
+- L'esecuzione di un contratto (acquisto delle foto).
+- Il consenso dell'utente (per finalità di marketing e cookie).
+- L'adempimento di obblighi di legge (fatturazione e contabilità).
+
+---
+
+**5. Modalità di trattamento e conservazione dei dati**  
+I dati personali vengono trattati con strumenti elettronici e archiviati in ambienti sicuri. Conserviamo i dati per il tempo necessario a soddisfare le finalità sopra indicate, in conformità con gli obblighi di legge.
+
+- I dati relativi agli ordini saranno conservati per 10 anni come richiesto dalla normativa fiscale.
+- I dati raccolti per finalità di marketing saranno conservati fino alla revoca del consenso.
+
+---
+
+**6. Condivisione dei dati**  
+I dati potranno essere comunicati a:
+
+- Fornitori di servizi di pagamento (Stripe, PayPal, ecc.)
+- Servizi di hosting e manutenzione del sito
+- Autorità fiscali e legali, se richiesto dalla legge
+
+I tuoi dati non saranno venduti o ceduti a terze parti per finalità di marketing.
+
+---
+
+**7. Diritti dell'utente**  
+In qualità di interessato, hai diritto a:
+
+- Accedere ai tuoi dati personali.
+- Richiedere la rettifica o la cancellazione dei dati.
+- Opporsi al trattamento o limitarne l'uso.
+- Ricevere i tuoi dati in formato strutturato (portabilità dei dati).
+- Revocare il consenso in qualsiasi momento.
+
+Per esercitare i tuoi diritti, puoi contattarci all'email: [EMAIL DI CONTATTO]
+
+---
+
+**8. Sicurezza dei dati**  
+Adottiamo misure di sicurezza adeguate per proteggere i dati personali da accessi non autorizzati, perdita, divulgazione o distruzione accidentale.
+
+---
+
+**9. Cookie Policy**  
+Utilizziamo cookie tecnici e di profilazione per migliorare la tua esperienza di navigazione. Puoi gestire le tue preferenze sui cookie attraverso il banner presente sul sito.
+
+Per ulteriori dettagli consulta la nostra [Cookie Policy].
+
+---
+
+**10. Modifiche alla presente informativa**  
+Ci riserviamo il diritto di aggiornare la presente informativa. Gli utenti saranno informati tramite avviso sul sito web.
+
+---
+
+**Accettazione della Privacy Policy**  
+Proseguendo nella navigazione e utilizzando i nostri servizi, accetti la presente Privacy Policy. Durante l'acquisto sarà richiesto il tuo consenso esplicito tramite apposita checkbox.
+
+Se non accetti le condizioni della presente informativa, ti invitiamo a non utilizzare il sito.
+

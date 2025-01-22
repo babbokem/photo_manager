@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accesso Evento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Accedi a un Evento</h1>
+
+        <!-- Messaggi di sistema -->
+        {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Form per il codice di accesso -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="access_code" class="form-label">Inserisci il codice di accesso</label>
+                <input type="text" name="access_code" id="access_code" class="form-control" placeholder="Codice di accesso" required>
+            </div>
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Accedi</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Torna alla Dashboard</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

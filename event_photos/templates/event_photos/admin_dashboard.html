@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Amministratore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Dashboard Amministratore</h1>
+
+        <!-- Sezione per creare un nuovo evento -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Crea Nuovo Evento</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Crea Evento</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Elenco degli eventi esistenti -->
+        <h2 class="mt-5">Eventi Creati</h2>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Nome Evento</th>
+                    <th>Descrizione</th>
+                    <th>Data di Creazione</th>
+                    <th>Codice di Accesso</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>{{ event.name }}</td>
+                    <td>{{ event.description }}</td>
+                    <td>{{ event.date_created }}</td>
+                    <td><code>{{ event.access_code }}</code></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Nessun evento creato.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
