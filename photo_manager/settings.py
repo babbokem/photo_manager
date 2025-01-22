@@ -18,6 +18,9 @@ from dotenv import load_dotenv
 
 
 
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
 
 
 
