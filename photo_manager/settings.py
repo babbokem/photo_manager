@@ -20,8 +20,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 CSRF_TRUSTED_ORIGINS = ['https://photomanager-production.up.railway.app']
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = True
 
 
