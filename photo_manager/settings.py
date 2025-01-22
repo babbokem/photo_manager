@@ -24,7 +24,7 @@ SECRET_KEY = "django-insecure-bz#0lkczk1nvt_n^i$3y7iz78jyun86@sy#mzcrk)8usu)xvjk
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'photomanager-production.up.railway.app']
 
 
 # Installed apps
