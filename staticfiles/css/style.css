@@ -1,0 +1,30 @@
+img {
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.photo-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    height: 0;
+    padding-bottom: 75%; /* Per un rapporto 4:3. Usa 100% per 1:1 */
+}
+
+.photo-card img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Taglia l'immagine per riempire lo spazio */
+}
+
+.photo-card:hover {
+    transform: scale(1.05);
+    transition: 0.3s;
+}

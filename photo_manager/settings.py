@@ -16,15 +16,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 from dotenv import load_dotenv
 
+
+
+
+
+
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
-SECRET_KEY = "django-insecure-bz#0lkczk1nvt_n^i$3y7iz78jyun86@sy#mzcrk)8usu)xvjk"
+SECRET_KEY = "x4n-$ouyj(=)158ozlda&a+%9l#(g@qo9f%1)(ycv8sq+owd=_ey"
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['.railway.app', 'photomanager-production.up.railway.app', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 
