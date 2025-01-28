@@ -44,7 +44,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security settings
 SECRET_KEY = "x4n-$ouyj(=)158ozlda&a+%9l#(g@qo9f%1)(ycv8sq+owd=_ey"
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
