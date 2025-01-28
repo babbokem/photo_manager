@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acquista Foto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .photo-container {
+            position: relative;
+            display: inline-block;
+        }
+        .photo-container img {
+            pointer-events: none;
+            user-select: none;
+        }
+        .photo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Acquista Foto per l'Evento: {{ event.name }}</h1>
+        <p class="text-center">Prezzo per Foto: {{ event.price_per_photo }} €</p>
+        
+        <div class="row">
+            {% for photo in photos %}
+            <div class="col-md-4 mb-3 photo-container">
+                <img src="{{ photo.file_path.url }}" class="img-fluid rounded" alt="{{ photo.original_name }}" oncontextmenu="return false;" draggable="false">
+                <div class="photo-overlay" onclick="document.getElementById('photo-checkbox-{{ photo.id }}').click();"></div>
+                <div class="mt-2">
+                    <input type="checkbox" id="photo-checkbox-{{ photo.id }}" name="photos" data-price="{{ event.price_per_photo }}" data-photo-id="{{ photo.id }}" onclick="updateCart()"> Seleziona
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">Nessuna foto disponibile per questo evento.</p>
+            {% endfor %}
+        </div>
+        
+        {% if photos %}
+        <div class="mt-4 border p-3 bg-light">
+            <h4>Inserisci la tua email</h4>
+            <div class="mb-3">
+                <input type="email" id="customer-email" class="form-control" placeholder="Inserisci la tua email" required>
+            </div>
+            <h4>Riepilogo Carrello</h4>
+            <p>Foto selezionate: <span id="cart-count">0</span></p>
+            <p>Importo totale: <span id="cart-total">0.00 €</span></p>
+            <button class="btn btn-success" id="purchase-button">Acquista</button>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+
+        function updateCart() {
+            const selectedPhotos = document.querySelectorAll('input[name="photos"]:checked');
+            const totalPhotos = selectedPhotos.length;
+            let totalPrice = 0;
+            selectedPhotos.forEach(photo => {
+                totalPrice += parseFloat(photo.dataset.price);
+            });
+
+            document.getElementById('cart-count').innerText = totalPhotos;
+            document.getElementById('cart-total').innerText = totalPrice.toFixed(2) + ' €';
+        }
+
+        document.getElementById('purchase-button').addEventListener('click', function() {
+            const selectedPhotos = document.querySelectorAll('input[name="photos"]:checked');
+            const customerEmail = document.getElementById('customer-email').value;
+
+            if (selectedPhotos.length === 0) {
+                alert("Seleziona almeno una foto per procedere all'acquisto.");
+                return;
+            }
+
+            if (!customerEmail) {
+                alert("Inserisci la tua email per procedere.");
+                return;
+            }
+
+            let photoIds = [];
+            selectedPhotos.forEach(photo => {
+                photoIds.push(photo.dataset.photoId);
+            });
+
+            fetch("{% url 'create_checkout_session' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ photo_ids: photoIds, email: customerEmail })
+            })
+            .then(response => response.json())
+            .then(session => {
+                if (session.error) {
+                    alert("Errore durante la creazione della sessione di pagamento: " + session.error);
+                } else {
+                    stripe.redirectToCheckout({ sessionId: session.id });
+                }
+            })
+            .catch(error => {
+                console.error('Errore:', error);
+                alert('Si è verificato un errore durante l\'acquisto.');
+            });
+        });
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('dragstart', event => event.preventDefault());
+    </script>
+</body>
+</html>

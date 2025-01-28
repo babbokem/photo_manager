@@ -1,5 +1,8 @@
 from django.urls import path
 from . import views  # Importa le view definite nel file views.py
+from .views import check_media_path
+from .views import create_checkout_session
+
 
 urlpatterns = [
     # Homepage
@@ -27,4 +30,9 @@ urlpatterns = [
 
     # Carrello
     path('cart/', views.cart, name='cart'),  # Gestione carrello
+    path('check-media/', check_media_path, name='check-media'),
+    path('create-checkout-session/', create_checkout_session, name='create_checkout_session'),  # URL per iniziare il pagamento
+    path('checkout/success/', views.checkout_success, name='checkout_success'),
+    path('checkout/cancel/', views.checkout_cancel, name='checkout_cancel'),
+    path('download/<str:filename>/', views.download_zip, name='download_zip'),
 ]

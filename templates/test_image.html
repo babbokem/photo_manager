@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image</title>
+</head>
+<body>
+    <h1>Test della visualizzazione dell'immagine</h1>
+
+    <!-- Metodo 1: Percorso assoluto -->
+    <p>Prova con il percorso assoluto:</p>
+    <img src="http://127.0.0.1:8000/media/event_photos/event_5/IMG20241227175657.jpg" alt="Event Photo" width="600">
+
+    <hr>
+
+    <!-- Metodo 2: Percorso Django -->
+    <p>Prova con la variabile media di Django:</p>
+    <img src="{% static 'media/event_photos/event_5/IMG20241227175657.jpg' %}" alt="Event Photo" width="600">
+
+    <hr>
+
+    <!-- Metodo 3: Percorso relativo -->
+    <p>Prova con il percorso relativo:</p>
+    <img src="/media/event_photos/event_5/IMG20241227175657.jpg" alt="Event Photo" width="600">
+
+</body>
+</html>
