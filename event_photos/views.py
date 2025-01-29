@@ -428,16 +428,20 @@ def upload_photos(request, event_id):
 
 
 @login_required
+dfrom django.core.files.storage import default_storage
+import zipfile
+import os
+
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == 'POST' and request.FILES.get('zip_file'):
         zip_file = request.FILES['zip_file']
-        
+
         # Carica il file ZIP su S3
         s3_path = f'event_zips/{event.id}/{zip_file.name}'
         default_storage.save(s3_path, ContentFile(zip_file.read()))
-        
+
         # Scompatta il file ZIP direttamente su S3
         extracted_folder = f'event_photos/{event.id}/'  # Cartella dove scompattare i file su S3
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
@@ -445,11 +449,11 @@ def upload_zip(request, event_id):
                 if file_name.lower().endswith(('png', 'jpg', 'jpeg')):
                     # Creare un percorso per il file estratto
                     extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
-                    
+
                     # Carica il file estratto su S3
                     with default_storage.open(extracted_file_path, 'wb') as f:
                         f.write(zip_ref.read(file_name))
-                    
+
                     # Salva nel database
                     relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
                     Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
