@@ -429,54 +429,36 @@ def upload_photos(request, event_id):
 
 @login_required
 def upload_zip(request, event_id):
-    print("La funzione upload_zip è stata chiamata.")  # Debug
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == 'POST' and request.FILES.get('zip_file'):
         zip_file = request.FILES['zip_file']
-        print(f"Nome file ZIP ricevuto: {zip_file.name}")  # Debug
+        
+        # Carica il file ZIP su S3
+        s3_path = f'event_zips/{event.id}/{zip_file.name}'
+        default_storage.save(s3_path, ContentFile(zip_file.read()))
+        
+        # Scompatta il file ZIP direttamente su S3
+        extracted_folder = f'event_photos/{event.id}/'  # Cartella dove scompattare i file su S3
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            for file_name in zip_ref.namelist():
+                if file_name.lower().endswith(('png', 'jpg', 'jpeg')):
+                    # Creare un percorso per il file estratto
+                    extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
+                    
+                    # Carica il file estratto su S3
+                    with default_storage.open(extracted_file_path, 'wb') as f:
+                        f.write(zip_ref.read(file_name))
+                    
+                    # Salva nel database
+                    relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
+                    Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
 
-        if not zip_file.name.endswith('.zip'):
-            messages.error(request, "Carica un file ZIP valido.")
-            return redirect('event_photos', event_id=event.id)
-
-        try:
-            # **SALVATAGGIO ZIP IN event_zips/**
-            zip_folder = os.path.join(settings.EVENT_ZIPS_DIR, f'event_{event.id}')
-            os.makedirs(zip_folder, exist_ok=True)
-
-            zip_path = os.path.join(zip_folder, zip_file.name)
-            with open(zip_path, 'wb') as f:
-                for chunk in zip_file.chunks():
-                    f.write(chunk)
-            print(f"File ZIP salvato: {zip_path}")  # Debug
-
-            # **ESTRAZIONE DELLE IMMAGINI IN event_photos/**
-            extracted_folder = os.path.join(settings.EVENT_PHOTOS_DIR, f'event_{event.id}')
-            os.makedirs(extracted_folder, exist_ok=True)
-            print(f"Cartella per le foto estratte: {extracted_folder}")  # Debug
-
-            # Estrarre le immagini dallo ZIP
-            with zipfile.ZipFile(zip_path, 'r') as zf:
-                for file_name in zf.namelist():
-                    if file_name.lower().endswith(('png', 'jpg', 'jpeg')):
-                        extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
-                        with open(extracted_file_path, 'wb') as f:
-                            f.write(zf.read(file_name))
-                        print(f"Foto salvata: {extracted_file_path}")  # Debug
-
-                        # Salvare nel database il percorso corretto
-                        relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
-                        Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
-
-            messages.success(request, "Foto caricate con successo dal file ZIP!")
-        except Exception as e:
-            messages.error(request, f"Errore durante il caricamento del file ZIP: {e}")
-            print(f"Errore durante il caricamento: {e}")  # Debug
-
+        messages.success(request, "Foto caricate con successo dal file ZIP!")
         return redirect('event_photos', event_id=event.id)
 
     return render(request, 'upload_zip.html', {'event': event})
+
 
 
 
