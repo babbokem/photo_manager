@@ -48,7 +48,13 @@ else:
         'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
     }
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "photomanager-production.up.railway.app",  # Dominio Railway
+    ".railway.app",  # Per accettare altri sottodomini di Railway
+]
+
 
 
 CSRF_TRUSTED_ORIGINS = [
