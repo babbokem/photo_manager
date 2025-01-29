@@ -66,7 +66,7 @@ CSRF_COOKIE_SECURE = True  # Abilita per connessioni HTTPS
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Configurazione predefinita
 SESSION_COOKIE_SECURE = False  # Per sviluppo locale
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Opzionale, per chiudere la sessione alla chiusura del browser
-SESSION_COOKIE_AGE = 60
+SESSION_COOKIE_AGE = 1500
 
 
 
