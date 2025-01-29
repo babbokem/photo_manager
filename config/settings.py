@@ -31,7 +31,7 @@ print(f"🔹 DATABASE_URL LETTA: {os.getenv('DATABASE_URL')}")
 
 # Configurazione del database
 if DEBUG:
-    print("🟢 MODALITÀ LOCALE: USO IL DATABASE LOCALE")
+    # Modalità locale
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -43,7 +43,7 @@ if DEBUG:
         }
     }
 else:
-    print("🔵 MODALITÀ PRODUZIONE: USO IL DATABASE REMOTO")
+    # Modalità produzione su Railway
     DATABASES = {
         'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
     }
@@ -109,6 +109,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 # Root URL configuration
@@ -166,6 +167,8 @@ AUTHENTICATION_BACKENDS = [
 # Configurazione statici
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Configurazione del Volume Unico
 if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
