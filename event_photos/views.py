@@ -428,10 +428,6 @@ def upload_photos(request, event_id):
 
 
 @login_required
-dfrom django.core.files.storage import default_storage
-import zipfile
-import os
-
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
