@@ -19,6 +19,38 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 
+# Carica il file .env
+load_dotenv()
+
+# Legge il valore di DEBUG da .env e lo converte in un booleano
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+# Mostra nel terminale cosa sta leggendo
+print(f"🔹 DEBUG: {DEBUG}")
+print(f"🔹 DATABASE_URL LETTA: {os.getenv('DATABASE_URL')}")
+
+# Configurazione del database
+if DEBUG:
+    print("🟢 MODALITÀ LOCALE: USO IL DATABASE LOCALE")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'photo_manager_db',
+            'USER': 'postgres',
+            'PASSWORD': 'Datasei@2011',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+else:
+    print("🔵 MODALITÀ PRODUZIONE: USO IL DATABASE REMOTO")
+    DATABASES = {
+        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    }
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+
+
 CSRF_TRUSTED_ORIGINS = [
     'https://photomanager-production.up.railway.app',  # Sostituisci con il tuo dominio Railway
     'http://127.0.0.1:8000'  # Per test locali
@@ -44,9 +76,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security settings
 SECRET_KEY = "x4n-$ouyj(=)158ozlda&a+%9l#(g@qo9f%1)(ycv8sq+owd=_ey"
 
-DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+
+
 
 
 
@@ -99,13 +131,8 @@ TEMPLATES = [
 # WSGI application
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Database
 
-load_dotenv()
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
-}
 
 
 
@@ -188,11 +215,9 @@ EMAIL_HOST_PASSWORD = 'efys itmu rlyr gutj'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
 
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
-}
+
+
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
