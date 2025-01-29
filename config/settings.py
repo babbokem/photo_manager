@@ -170,13 +170,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-# Configurazione del Volume Unico
 if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
-    MEDIA_ROOT = '/app/media/'  # Unico volume persistente su Railway
-else:  # In locale
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = '/app/media/'  # Volume persistente su Railway
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale
 
-MEDIA_URL = '/media/'
 
 # Definizione delle sotto-cartelle dentro MEDIA_ROOT
 EVENT_ZIPS_DIR = os.path.join(MEDIA_ROOT, 'event_zips')  # ZIP caricati
