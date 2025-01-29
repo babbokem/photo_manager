@@ -89,16 +89,33 @@ SECRET_KEY = "x4n-$ouyj(=)158ozlda&a+%9l#(g@qo9f%1)(ycv8sq+owd=_ey"
 
 
 
+
+
+
 # Installed apps
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "event_photos",  # Aggiunta dell'app specifica
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'event_photos',  # App personalizzata
+    'storages',  # Django storages per S3
 ]
+
+# Configurazione di S3
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # La tua access key di AWS
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # La tua secret key di AWS
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')  # Nome del tuo bucket S3
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')  # Regione del tuo bucket, ad esempio 'us-west-2'
+
+# Utilizzare S3 come storage per i file
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Configurazione per la visibilità dei file
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
 # Middleware
 MIDDLEWARE = [
