@@ -233,4 +233,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STRIPE_PUBLIC_KEY = "pk_test_51PWGkOP6vStwNJaKuajaYtnldX0jAwFSF5MGVOBwR9vorQ1a93qtPTU8chavspfc2Mjd6HAsTqj1k4t0kgeeqniW00FzmTo9zo"  # Inserisci la tua chiave pubblica
 STRIPE_SECRET_KEY = "sk_test_51PWGkOP6vStwNJaKkAqFIsSuLlMXtw6zsBuqo5LyUqnzZ6zOmcKYwpNuNYValyuS4qna4YcGh5mBmmD3wRQEIUKg00DlzmWgIx"  # Inserisci la tua chiave segreta
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_table',
+    }
+}
+
 
