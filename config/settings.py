@@ -167,9 +167,23 @@ AUTHENTICATION_BACKENDS = [
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# Configurazione media
+# Configurazione del Volume Unico
+if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
+    MEDIA_ROOT = '/app/media/'  # Unico volume persistente su Railway
+else:  # In locale
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+# Definizione delle sotto-cartelle dentro MEDIA_ROOT
+EVENT_ZIPS_DIR = os.path.join(MEDIA_ROOT, 'event_zips')  # ZIP caricati
+EVENT_PHOTOS_DIR = os.path.join(MEDIA_ROOT, 'event_photos')  # Foto estratte dagli ZIP
+TEMP_ZIPS_DIR = os.path.join(MEDIA_ROOT, 'temp')  # ZIP generati per il download
+
+# Creazione automatica delle cartelle se non esistono
+for directory in [EVENT_ZIPS_DIR, EVENT_PHOTOS_DIR, TEMP_ZIPS_DIR]:
+    os.makedirs(directory, exist_ok=True)
+
 
 # Assicurati che la directory temp esista
 TEMP_DIR = os.path.join(MEDIA_ROOT, 'temp')

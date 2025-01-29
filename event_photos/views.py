@@ -30,7 +30,8 @@ from django.core.mail import send_mail
 
 def download_zip(request, filename):
     # Percorso completo del file ZIP nella cartella temporanea
-    zip_path = os.path.join(settings.MEDIA_ROOT, 'temp', filename)
+    zip_path = os.path.join(settings.TEMP_ZIPS_DIR, filename)
+
 
     if not os.path.exists(zip_path):
         raise Http404("Il file richiesto non esiste.")
@@ -40,6 +41,8 @@ def download_zip(request, filename):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     # Cancella il file dopo il download
+    
+    
     try:
         os.remove(zip_path)
     except Exception as e:
@@ -71,7 +74,7 @@ def checkout_success(request):
 
     # Salva il file ZIP in una directory temporanea
     zip_filename = f"acquisto_{now().strftime('%Y%m%d%H%M%S')}.zip"
-    zip_path = os.path.join(settings.MEDIA_ROOT, 'temp', zip_filename)
+    zip_path = os.path.join(settings.TEMP_ZIPS_DIR, zip_filename)
     with open(zip_path, 'wb') as f:
         f.write(zip_buffer.getvalue())
 
@@ -438,18 +441,31 @@ def upload_zip(request, event_id):
             return redirect('event_photos', event_id=event.id)
 
         try:
-            event_folder = os.path.join(settings.MEDIA_ROOT, f'event_{event.id}')
-            os.makedirs(event_folder, exist_ok=True)
-            print(f"Cartella creata: {event_folder}")  # Debug
+            # **SALVATAGGIO ZIP IN event_zips/**
+            zip_folder = os.path.join(settings.EVENT_ZIPS_DIR, f'event_{event.id}')
+            os.makedirs(zip_folder, exist_ok=True)
 
-            with zipfile.ZipFile(zip_file, 'r') as zf:
+            zip_path = os.path.join(zip_folder, zip_file.name)
+            with open(zip_path, 'wb') as f:
+                for chunk in zip_file.chunks():
+                    f.write(chunk)
+            print(f"File ZIP salvato: {zip_path}")  # Debug
+
+            # **ESTRAZIONE DELLE IMMAGINI IN event_photos/**
+            extracted_folder = os.path.join(settings.EVENT_PHOTOS_DIR, f'event_{event.id}')
+            os.makedirs(extracted_folder, exist_ok=True)
+            print(f"Cartella per le foto estratte: {extracted_folder}")  # Debug
+
+            # Estrarre le immagini dallo ZIP
+            with zipfile.ZipFile(zip_path, 'r') as zf:
                 for file_name in zf.namelist():
                     if file_name.lower().endswith(('png', 'jpg', 'jpeg')):
-                        extracted_file_path = os.path.join(event_folder, os.path.basename(file_name))
+                        extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
                         with open(extracted_file_path, 'wb') as f:
                             f.write(zf.read(file_name))
                         print(f"Foto salvata: {extracted_file_path}")  # Debug
 
+                        # Salvare nel database il percorso corretto
                         relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
                         Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
 
@@ -461,7 +477,6 @@ def upload_zip(request, event_id):
         return redirect('event_photos', event_id=event.id)
 
     return render(request, 'upload_zip.html', {'event': event})
-
 
 
 
