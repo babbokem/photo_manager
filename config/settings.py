@@ -105,17 +105,17 @@ INSTALLED_APPS = [
 ]
 
 # Configurazione di S3
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # La tua access key di AWS
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # La tua secret key di AWS
-AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')  # Nome del tuo bucket S3
-AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')  # Regione del tuo bucket, ad esempio 'us-west-2'
+#AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # La tua access key di AWS
+#AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # La tua secret key di AWS
+#AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')  # Nome del tuo bucket S3
+#AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')  # Regione del tuo bucket, ad esempio 'us-west-2'
 
 # Utilizzare S3 come storage per i file
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Configurazione per la visibilità dei file
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+#AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+#MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
 # Middleware
 MIDDLEWARE = [
@@ -187,12 +187,12 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = '/app/media/'  # Volume persistente su Railway
-else:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale
+#if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/app/media/'  # Volume persistente su Railway
+#else:
+#    MEDIA_URL = '/media/'
+#    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale
 
 
 # Definizione delle sotto-cartelle dentro MEDIA_ROOT
