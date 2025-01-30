@@ -555,7 +555,7 @@ def test_image_view(request):
     return render(request, 'test_image.html')
 
 def list_media_files(request):
-    media_path = os.path.join(settings.MEDIA_ROOT)  # Questo è il percorso di /app/media
+    media_path = settings.MEDIA_ROOT  # Percorso di /app/media (già definito nelle settings)
 
     # Verifica che la cartella principale esista
     if not os.path.exists(media_path):
@@ -567,9 +567,11 @@ def list_media_files(request):
         
         # Esplora ricorsivamente la cartella e le sue sottocartelle
         for root, dirs, files in os.walk(media_path):
-            # Aggiungi solo i file immagine alla lista (jpg, jpeg, png)
+            # Escludi le cartelle nascoste (opzionale)
+            dirs[:] = [d for d in dirs if not d.startswith('.')]  # Esclude cartelle che iniziano con punto
             for file in files:
-                if file.lower().endswith(('jpg', 'jpeg', 'png')):
+                if file.lower().endswith(('jpg', 'jpeg', 'png')):  # Filtro per immagini
+                    # Aggiungi il percorso completo del file
                     image_files.append(os.path.join(root, file))
 
         # Se non ci sono file immagine, restituisci un errore
