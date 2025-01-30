@@ -614,6 +614,10 @@ def list_all_files(request):
     
     except Exception as e:
         return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)
+
+
+
+
 def process_zip_file(self):
     """
     Scompatta il file ZIP nella directory associata all'evento e crea oggetti Photo.
