@@ -42,5 +42,7 @@ urlpatterns = [
     ]
 
 
-if settings.DEBUG:  # Assicurati di abilitare questo solo in fase di sviluppo, in produzione sarà gestito diversamente
+# Configurazione per servire file statici e media solo in modalità DEBUG
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
