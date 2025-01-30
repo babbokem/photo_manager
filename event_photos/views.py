@@ -443,6 +443,7 @@ def list_media_files(request):
 
 
 @login_required
+@login_required
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
@@ -451,6 +452,7 @@ def upload_zip(request, event_id):
 
         # Salva il file ZIP nella cartella persistente di Railway
         zip_path = os.path.join(settings.MEDIA_ROOT, 'event_zips', str(event.id), zip_file.name)
+        print("File ZIP salvato in:", zip_path)  # Aggiungi questa riga per debug
         os.makedirs(os.path.dirname(zip_path), exist_ok=True)  # Crea la cartella se non esiste
         with open(zip_path, 'wb') as f:
             f.write(zip_file.read())  # Salva il file ZIP nella cartella
@@ -458,24 +460,28 @@ def upload_zip(request, event_id):
         # Scompatta il file ZIP direttamente nella cartella persistente
         extracted_folder = os.path.join(settings.MEDIA_ROOT, 'event_photos', str(event.id))  # Percorso per le foto scompattate
         os.makedirs(extracted_folder, exist_ok=True)  # Crea la cartella per le foto estratte se non esiste
+        print("Estrazione ZIP in:", extracted_folder)  # Aggiungi questa riga per debug
 
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            print("Contenuto del file ZIP:", zip_ref.namelist())  # Aggiungi questa riga per debug
             for file_name in zip_ref.namelist():
                 if file_name.lower().endswith(('png', 'jpg', 'jpeg')):  # Verifica se è un'immagine
                     extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
+                    print("Foto estratta in:", extracted_file_path)  # Aggiungi questa riga per debug
 
-                    # Estrai il file nella cartella appropriata
                     with open(extracted_file_path, 'wb') as f:
-                        f.write(zip_ref.read(file_name))
+                        f.write(zip_ref.read(file_name))  # Estrai il file nella cartella
 
-                    # Salva il percorso del file estratto nel database
+                    # Salva nel database
                     relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
+                    print(f"Salvando nel database: {relative_path}")  # Aggiungi questa riga per debug
                     Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
 
         messages.success(request, "Foto caricate con successo dal file ZIP!")
         return redirect('event_photos', event_id=event.id)
 
     return render(request, 'upload_zip.html', {'event': event})
+
 
 
 
