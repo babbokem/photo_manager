@@ -449,23 +449,26 @@ def upload_zip(request, event_id):
     if request.method == 'POST' and request.FILES.get('zip_file'):
         zip_file = request.FILES['zip_file']
 
-        # Salva il file ZIP su S3
-        s3_path = f'event_zips/{event.id}/{zip_file.name}'
-        default_storage.save(s3_path, ContentFile(zip_file.read()))
+        # Salva il file ZIP nella cartella persistente di Railway
+        zip_path = os.path.join(settings.MEDIA_ROOT, 'event_zips', str(event.id), zip_file.name)
+        os.makedirs(os.path.dirname(zip_path), exist_ok=True)  # Crea la cartella se non esiste
+        with open(zip_path, 'wb') as f:
+            f.write(zip_file.read())  # Salva il file ZIP nella cartella
 
-        # Scompatta il file ZIP direttamente su S3
-        extracted_folder = f'event_photos/{event.id}/'  # Salva le foto scompattate su S3
+        # Scompatta il file ZIP direttamente nella cartella persistente
+        extracted_folder = os.path.join(settings.MEDIA_ROOT, 'event_photos', str(event.id))  # Percorso per le foto scompattate
+        os.makedirs(extracted_folder, exist_ok=True)  # Crea la cartella per le foto estratte se non esiste
+
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             for file_name in zip_ref.namelist():
-                if file_name.lower().endswith(('png', 'jpg', 'jpeg')):
-                    # Percorso per il file estratto su S3
+                if file_name.lower().endswith(('png', 'jpg', 'jpeg')):  # Verifica se è un'immagine
                     extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
 
-                    # Carica il file estratto su S3
-                    with default_storage.open(extracted_file_path, 'wb') as f:
+                    # Estrai il file nella cartella appropriata
+                    with open(extracted_file_path, 'wb') as f:
                         f.write(zip_ref.read(file_name))
 
-                    # Salva nel database
+                    # Salva il percorso del file estratto nel database
                     relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
                     Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
 

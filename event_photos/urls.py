@@ -2,6 +2,9 @@ from django.urls import path
 from . import views  # Importa le view definite nel file views.py
 from .views import check_media_path
 from .views import create_checkout_session
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 
 urlpatterns = [
@@ -36,3 +39,7 @@ urlpatterns = [
     path('checkout/cancel/', views.checkout_cancel, name='checkout_cancel'),
     path('download/<str:filename>/', views.download_zip, name='download_zip'),
     ]
+
+
+if settings.DEBUG:  # Assicurati di abilitare questo solo in fase di sviluppo, in produzione sarà gestito diversamente
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
