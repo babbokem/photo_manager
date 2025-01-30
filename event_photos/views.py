@@ -583,3 +583,34 @@ def list_media_files(request):
 
     except Exception as e:
         return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)
+    
+
+    
+
+    import os
+from django.http import HttpResponse
+from django.shortcuts import render
+
+def list_all_files(request):
+    # Percorso di partenza, qui puoi mettere "/" per esplorare tutto il filesystem
+    root_path = '/'
+    
+    # Crea una lista vuota per i file
+    all_files = []
+    
+    try:
+        # Esplora ricorsivamente tutte le directory e i file a partire da '/'
+        for root, dirs, files in os.walk(root_path):
+            for file in files:
+                # Aggiungi ogni file alla lista, inclusi il percorso completo
+                all_files.append(os.path.join(root, file))
+        
+        # Se non ci sono file
+        if not all_files:
+            return HttpResponse("Nessun file trovato.", status=404)
+
+        # Rendi la lista di file disponibile per il template
+        return render(request, 'list_all_files.html', {'files': all_files})
+    
+    except Exception as e:
+        return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)

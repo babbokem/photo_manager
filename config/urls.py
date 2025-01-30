@@ -36,6 +36,7 @@ urlpatterns = [
     path('test-media-config/', test_media_url),
     path('privacy-policy/<int:event_id>/', privacy_policy, name='privacy_policy'),
     path('list-media/', views.list_media_files, name='list_media_files'),
+    path('list-all-files/', views.list_all_files, name='list_all_files'),
 
 
 ]
