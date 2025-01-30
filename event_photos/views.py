@@ -534,23 +534,30 @@ def delete_photo(request, photo_id):
 def test_image_view(request):
     return render(request, 'test_image.html')
 
-
-
 def list_media_files(request):
-    event_photos_path = os.path.join(settings.MEDIA_ROOT, 'event_photos')
-    
+    media_path = os.path.join(settings.MEDIA_ROOT)  # Questo è il percorso di /app/media
+
+    # Verifica che la cartella principale esista
+    if not os.path.exists(media_path):
+        return HttpResponse(f"La cartella {media_path} non esiste.", status=404)
+
     try:
-        # Ottieni la lista dei file nella cartella event_photos
-        files = os.listdir(event_photos_path)
-        # Crea una lista di immagini per il rendering
-        image_files = [file for file in files if file.lower().endswith(('jpg', 'jpeg', 'png'))]
+        # Crea una lista vuota per immagazzinare i file immagine
+        image_files = []
         
-        # Se non ci sono file, restituisci un errore
+        # Esplora ricorsivamente la cartella e le sue sottocartelle
+        for root, dirs, files in os.walk(media_path):
+            # Aggiungi solo i file immagine alla lista (jpg, jpeg, png)
+            for file in files:
+                if file.lower().endswith(('jpg', 'jpeg', 'png')):
+                    image_files.append(os.path.join(root, file))
+
+        # Se non ci sono file immagine, restituisci un errore
         if not image_files:
             return HttpResponse("Nessuna immagine trovata.", status=404)
-        
+
         # Mostra i file trovati
         return render(request, 'list_media_files.html', {'files': image_files})
-    
-    except FileNotFoundError:
-        raise Http404("La cartella delle immagini non esiste.")
+
+    except Exception as e:
+        return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)
