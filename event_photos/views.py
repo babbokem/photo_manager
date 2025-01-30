@@ -533,3 +533,14 @@ def delete_photo(request, photo_id):
 
 def test_image_view(request):
     return render(request, 'test_image.html')
+
+
+
+def list_media_files(request):
+    media_path = settings.MEDIA_ROOT
+    try:
+        files = os.listdir(media_path)
+        files_list = "<br>".join(files)
+        return HttpResponse(f"File nella cartella media:<br>{files_list}")
+    except Exception as e:
+        return HttpResponse(f"Errore nell'accesso alla cartella: {str(e)}")
