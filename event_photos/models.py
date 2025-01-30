@@ -1,15 +1,13 @@
 import uuid
-from datetime import timedelta, date
-from django.db import models
-from django.conf import settings
-from pathlib import Path
 import os
 import zipfile
-import logging
 import shutil
+from pathlib import Path
+from django.db import models
+from django.conf import settings
 from django.core.exceptions import ValidationError
-
-
+from django.utils.timezone import now
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -54,19 +52,13 @@ class Event(models.Model):
         verbose_name="Carica ZIP",
         validators=[validate_zip_file]
     )
-    price_per_photo = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0.0,
-        verbose_name="Prezzo per Foto"
-    )
 
     def save(self, *args, **kwargs):
         """
         Override del metodo save per impostare la data di scadenza e processare i file ZIP.
         """
         if not self.expiry_date:
-            self.expiry_date = date.today() + timedelta(days=30)
+            self.expiry_date = now().date() + timedelta(days=30)
 
         # Genera codice univoco se non è presente
         if not self.access_code:
@@ -76,6 +68,7 @@ class Event(models.Model):
 
         # Scompatta il file ZIP se presente e non ancora elaborato
         if self.zip_file and not os.path.exists(self.get_extracted_path()):
+            print(f"ZIP trovato per l'evento: {self.name}. Inizio estrazione.")  # Print aggiunto
             self.process_zip_file()
 
     def process_zip_file(self):
@@ -83,7 +76,7 @@ class Event(models.Model):
         Scompatta il file ZIP nella directory associata all'evento e crea oggetti Photo.
         """
         if not self.zip_file:
-            logger.warning("Nessun file ZIP presente per l'evento.")
+            print("Nessun file ZIP presente per l'evento.")  # Print aggiunto
             return
 
         try:
@@ -93,13 +86,13 @@ class Event(models.Model):
             # Assicurati che la directory esista
             os.makedirs(extract_to, exist_ok=True)
 
-            print(f"Estrazione ZIP in: {extract_to}")  # Debugging
+            print(f"Estrazione ZIP in: {extract_to}")  # Print aggiunto
 
             # Estrai i file dal file ZIP
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(extract_to)
 
-            print(f"File ZIP {self.zip_file.name} estratto in {extract_to}")  # Debugging
+            print(f"File ZIP {self.zip_file.name} estratto in {extract_to}")  # Print aggiunto
 
             # Filtra solo immagini e crea oggetti Photo
             valid_extensions = ('.jpg', '.jpeg', '.png')
@@ -109,17 +102,24 @@ class Event(models.Model):
                         relative_path = os.path.relpath(
                             os.path.join(root, file_name), settings.MEDIA_ROOT
                         )
+                        print(f"Salvando foto: {file_name}")  # Print aggiunto
                         Photo.objects.create(
                             event=self,
                             file_path=relative_path,
                             original_name=file_name
                         )
-                        print(f"Foto {file_name} salvata nel database.")  # Debugging
+                        print(f"Foto {file_name} salvata nel database.")  # Print aggiunto
 
         except zipfile.BadZipFile:
-            logger.error(f"Il file {self.zip_file.name} non è un archivio ZIP valido.")
+            print(f"Il file {self.zip_file.name} non è un archivio ZIP valido.")  # Print aggiunto
         except Exception as e:
-            logger.error(f"Errore durante l'estrazione del file ZIP: {e}")
+            print(f"Errore durante l'estrazione del file ZIP: {e}")  # Print aggiunto
+
+    def get_extracted_path(self):
+        """
+        Restituisce il percorso della directory in cui scompattare i file ZIP.
+        """
+        return Path(settings.MEDIA_ROOT) / 'event_photos' / f"event_{self.id}"
 
     def delete(self, *args, **kwargs):
         """
@@ -129,24 +129,18 @@ class Event(models.Model):
             # Cancella il file ZIP se esiste
             if self.zip_file and os.path.exists(self.zip_file.path):
                 os.remove(self.zip_file.path)
-                logger.info(f"ZIP eliminato: {self.zip_file.path}")
+                print(f"ZIP eliminato: {self.zip_file.path}")  # Print aggiunto
 
             # Cancella la cartella delle immagini dell'evento
             event_folder = os.path.join(settings.MEDIA_ROOT, f'event_photos/event_{self.id}')
             if os.path.exists(event_folder):
                 shutil.rmtree(event_folder)
-                logger.info(f"Cartella immagini eliminata: {event_folder}")
+                print(f"Cartella immagini eliminata: {event_folder}")  # Print aggiunto
 
         except Exception as e:
-            logger.error(f"Errore durante l'eliminazione dell'evento: {e}")
+            print(f"Errore durante l'eliminazione dell'evento: {e}")  # Print aggiunto
 
         super().delete(*args, **kwargs)
-
-    def get_extracted_path(self):
-        """
-        Restituisce il percorso della directory in cui scompattare i file ZIP.
-        """
-        return Path(settings.MEDIA_ROOT) / 'event_photos' / f"event_{self.id}"
 
     def __str__(self):
         return self.name
@@ -157,7 +151,7 @@ class Photo(models.Model):
     original_name = models.CharField(max_length=255, blank=True, verbose_name="Nome Originale del File")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Caricato il")
     purchased = models.BooleanField(default=False, verbose_name="Acquistata")
-    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)  # Aggiungi questo campo se non esiste
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
     def save(self, *args, **kwargs):
         """
@@ -174,10 +168,10 @@ class Photo(models.Model):
         try:
             if self.file_path and os.path.exists(self.file_path.path):
                 os.remove(self.file_path.path)
-                logger.info(f"Foto eliminata: {self.file_path.path}")
+                print(f"Foto eliminata: {self.file_path.path}")  # Print aggiunto
 
         except Exception as e:
-            logger.error(f"Errore durante l'eliminazione della foto: {e}")
+            print(f"Errore durante l'eliminazione della foto: {e}")  # Print aggiunto
 
         super().delete(*args, **kwargs)
 
