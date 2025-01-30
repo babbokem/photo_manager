@@ -427,6 +427,21 @@ def upload_photos(request, event_id):
 
 
 
+
+
+
+
+def list_media_files(request):
+    media_path = settings.MEDIA_ROOT  # Percorso della cartella persistente
+    try:
+        files = os.listdir(media_path)  # Elenco dei file nella cartella
+        files_list = "<br>".join(files)  # Crea una lista HTML dei file
+        return HttpResponse(f"File nella cartella media:<br>{files_list}")
+    except Exception as e:
+        return HttpResponse(f"Errore nell'accesso alla cartella: {str(e)}")
+
+
+
 @login_required
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)

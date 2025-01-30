@@ -35,4 +35,5 @@ urlpatterns = [
     path('checkout/success/', views.checkout_success, name='checkout_success'),
     path('checkout/cancel/', views.checkout_cancel, name='checkout_cancel'),
     path('download/<str:filename>/', views.download_zip, name='download_zip'),
+    path('list-media/', views.list_media_files, name='list_media_files'),
 ]
