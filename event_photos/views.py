@@ -649,7 +649,7 @@ def process_zip_file(self):
                     relative_path = os.path.relpath(
                         os.path.join(root, file_name), settings.MEDIA_ROOT
                     )
-                    print(f"Salvando immagine nel database: {file_name}, percorso: {relative_path}")  # Debug
+                    print(f"Foto estratta: {relative_path}")  # Debugging
                     Photo.objects.create(
                         event=self,
                         file_path=relative_path,
