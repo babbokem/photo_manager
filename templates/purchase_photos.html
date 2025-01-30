@@ -40,10 +40,13 @@
                 <div class="mt-2">
                     <input type="checkbox" id="photo-checkbox-{{ photo.id }}" name="photos" data-price="{{ event.price_per_photo }}" data-photo-id="{{ photo.id }}" onclick="updateCart()"> Seleziona
                 </div>
+                <!-- Aggiungi un debug del percorso per vedere cosa sta succedendo -->
+                <p>Path dell'immagine: {{ photo.file_path.url }}</p> <!-- Stampa il percorso dell'immagine -->
             </div>
-            {% empty %}
+        {% empty %}
             <p class="text-center">Nessuna foto disponibile per questo evento.</p>
-            {% endfor %}
+        {% endfor %}
+        
         </div>
         
         {% if photos %}
