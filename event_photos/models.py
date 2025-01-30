@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 import logging
+from datetime import timedelta
+
 
 logger = logging.getLogger(__name__)
 
