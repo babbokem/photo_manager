@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Immagini Disponibili</title>
+</head>
+<body>
+    <h1>Immagini Disponibili</h1>
+    <ul>
+        {% for file in files %}
+            <li>
+                <img src="{{ MEDIA_URL }}event_photos/{{ file }}" alt="{{ file }}" width="200" />
+                <p>{{ file }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

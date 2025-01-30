@@ -537,10 +537,20 @@ def test_image_view(request):
 
 
 def list_media_files(request):
-    media_path = settings.MEDIA_ROOT
+    event_photos_path = os.path.join(settings.MEDIA_ROOT, 'event_photos')
+    
     try:
-        files = os.listdir(media_path)
-        files_list = "<br>".join(files)
-        return HttpResponse(f"File nella cartella media:<br>{files_list}")
-    except Exception as e:
-        return HttpResponse(f"Errore nell'accesso alla cartella: {str(e)}")
+        # Ottieni la lista dei file nella cartella event_photos
+        files = os.listdir(event_photos_path)
+        # Crea una lista di immagini per il rendering
+        image_files = [file for file in files if file.lower().endswith(('jpg', 'jpeg', 'png'))]
+        
+        # Se non ci sono file, restituisci un errore
+        if not image_files:
+            return HttpResponse("Nessuna immagine trovata.", status=404)
+        
+        # Mostra i file trovati
+        return render(request, 'list_media_files.html', {'files': image_files})
+    
+    except FileNotFoundError:
+        raise Http404("La cartella delle immagini non esiste.")
