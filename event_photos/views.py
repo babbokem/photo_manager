@@ -436,6 +436,14 @@ def upload_photos(request, event_id):
 
 
 
+
+
+
+
+
+
+
+
 @login_required
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -540,31 +548,30 @@ def test_image_view(request):
     return render(request, 'test_image.html')
 
 def list_media_files(request):
-    # Percorso della cartella in cui sono salvate le foto
-    media_path = os.path.join(settings.MEDIA_ROOT, 'event_photos')
+    media_path = settings.MEDIA_ROOT  # Percorso di /app/media (già definito nelle settings)
 
-    # Verifica che la cartella esista
+    # Verifica che la cartella principale esista
     if not os.path.exists(media_path):
         return HttpResponse(f"La cartella {media_path} non esiste.", status=404)
 
     try:
-        # Crea una lista per memorizzare i file immagine
+        # Crea una lista vuota per immagazzinare i file immagine
         image_files = []
-
-        # Esplora la cartella e le sue sottocartelle
+        
+        # Esplora ricorsivamente la cartella e le sue sottocartelle
         for root, dirs, files in os.walk(media_path):
-            # Aggiungi i file immagine alla lista
+            # Escludi le cartelle nascoste (opzionale)
+            dirs[:] = [d for d in dirs if not d.startswith('.')]  # Esclude cartelle che iniziano con punto
             for file in files:
-                if file.lower().endswith(('jpg', 'jpeg', 'png')):
-                    # Aggiungi il percorso relativo alla foto
-                    relative_path = os.path.relpath(os.path.join(root, file), settings.MEDIA_ROOT)
-                    image_files.append(relative_path)
+                if file.lower().endswith(('jpg', 'jpeg', 'png')):  # Filtro per immagini
+                    # Aggiungi il percorso completo del file
+                    image_files.append(os.path.join(root, file))
 
-        # Se non ci sono immagini, restituisci un errore
+        # Se non ci sono file immagine, restituisci un errore
         if not image_files:
             return HttpResponse("Nessuna immagine trovata.", status=404)
 
-        # Passa i file trovati al template
+        # Mostra i file trovati
         return render(request, 'list_media_files.html', {'files': image_files})
 
     except Exception as e:
@@ -647,3 +654,37 @@ def process_zip_file(self):
         logger.error(f"Il file {self.zip_file.name} non è un archivio ZIP valido.")
     except Exception as e:
         logger.error(f"Errore durante l'estrazione del file ZIP: {e}")
+
+
+# event_photos/views.py
+
+def view_foto(request):
+    # Percorso della cartella in cui sono salvate le foto
+    media_path = os.path.join(settings.MEDIA_ROOT, 'event_photos')
+
+    # Verifica che la cartella esista
+    if not os.path.exists(media_path):
+        return HttpResponse(f"La cartella {media_path} non esiste.", status=404)
+
+    try:
+        # Crea una lista per memorizzare i file immagine
+        image_files = []
+
+        # Esplora la cartella e le sue sottocartelle
+        for root, dirs, files in os.walk(media_path):
+            # Aggiungi i file immagine alla lista
+            for file in files:
+                if file.lower().endswith(('jpg', 'jpeg', 'png')):  # Aggiungi il filtro per immagini
+                    # Aggiungi il percorso relativo alla foto
+                    relative_path = os.path.relpath(os.path.join(root, file), settings.MEDIA_ROOT)
+                    image_files.append(relative_path)
+
+        # Se non ci sono immagini, restituisci un errore
+        if not image_files:
+            return HttpResponse("Nessuna immagine trovata.", status=404)
+
+        # Passa i file trovati al template
+        return render(request, 'view_foto.html', {'files': image_files})
+
+    except Exception as e:
+        return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)

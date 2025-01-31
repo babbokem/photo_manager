@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from event_photos import views  # Importa le view della tua app
-from event_photos.views import test_image_view 
+from event_photos.views import test_image_view
 from event_photos.views import check_media_path
 from event_photos.views import test_media_url
 from event_photos.views import privacy_policy
@@ -37,12 +37,10 @@ urlpatterns = [
     path('privacy-policy/<int:event_id>/', privacy_policy, name='privacy_policy'),
     path('list-media/', views.list_media_files, name='list_media_files'),
     path('list-all-files/', views.list_all_files, name='list_all_files'),
-
-
+    path('view-foto/', views.view_foto, name='view_foto'),  # Aggiungi questa rotta
 ]
 
 # Configurazione per servire file statici e media solo in modalità DEBUG
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-

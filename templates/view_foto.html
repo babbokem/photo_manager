@@ -9,21 +9,24 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center">Visualizza Immagini</h1>
-        
+
         <div class="row">
             {% for file in files %}
-            <div class="col-md-3 mb-3">
-                <div class="card">
-                    <!-- Usa l'URL completo dell'immagine -->
-                    <img src="{{ file }}" class="card-img-top" alt="Immagine">
-                    <div class="card-body">
-                        <p class="card-text">{{ file }}</p>
+                <!-- Debug: Mostra il percorso completo del file -->
+                <p>Percorso dell'immagine: /media/{{ file }}</p> <!-- Aggiungi questa linea per il debug -->
+
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <!-- Forza l'URL dell'immagine con /media/ -->
+                        <img src="/media/{{ file }}" class="card-img-top" alt="Immagine">
+                        <div class="card-body">
+                            <p class="card-text">{{ file }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
             {% endfor %}
         </div>
-        
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
