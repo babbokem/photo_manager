@@ -124,12 +124,12 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configurazione dei file media
-if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = '/app/media/'  # Percorso nel contenitore di Railway
-else:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale per lo sviluppo
+#if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/app/media/'  # Percorso nel contenitore di Railway
+#else:
+#    MEDIA_URL = '/media/'
+#    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale per lo sviluppo
 
 # Definizione delle sotto-cartelle dentro MEDIA_ROOT
 EVENT_ZIPS_DIR = os.path.join(MEDIA_ROOT, 'event_zips')  # ZIP caricati
