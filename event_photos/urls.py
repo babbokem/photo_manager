@@ -5,6 +5,7 @@ from .views import create_checkout_session
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include, re_path
+from django.views.static import serve  # Aggiungi questa riga per importare serve
 
 
 
