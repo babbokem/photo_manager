@@ -8,6 +8,9 @@ from event_photos.views import test_image_view
 from event_photos.views import check_media_path
 from event_photos.views import test_media_url
 from event_photos.views import privacy_policy
+from django.views.static import serve
+from django.urls import path, include, re_path
+
 
 
 urlpatterns = [
@@ -38,9 +41,13 @@ urlpatterns = [
     path('list-media/', views.list_media_files, name='list_media_files'),
     path('list-all-files/', views.list_all_files, name='list_all_files'),
     path('view-foto/', views.view_foto, name='view_foto'),  # Aggiungi questa rotta
+    # Aggiungi questa riga per servire i file multimediali in produzione
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 
-# Configurazione per servire file statici e media solo in modalità DEBUG
+
+
+# Aggiungi il supporto per i file statici se necessario (per lo sviluppo)
 #if settings.DEBUG:
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -126,7 +126,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Configurazione dei file media
 #if os.getenv('RAILWAY_ENVIRONMENT'):  # Se siamo su Railway
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/app/media/'  # Percorso nel contenitore di Railway
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 #else:
 #    MEDIA_URL = '/media/'
 #    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale per lo sviluppo
