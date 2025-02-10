@@ -84,7 +84,8 @@ def checkout_success(request):
         f.write(zip_buffer.getvalue())
 
     # Costruisci il link per il download
-    zip_url = request.build_absolute_uri(reverse('download_zip', args=[zip_filename]))
+    zip_url = request.build_absolute_uri(reverse('download_zip', args=[zip_filename])).rstrip('/')
+
 
     # Crea il contenuto dell'email
     subject = "Le tue foto acquistate"
