@@ -24,6 +24,8 @@ from django.http import FileResponse, Http404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 import logging
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 
 logger = logging.getLogger(__name__)
@@ -340,21 +342,38 @@ def send_access_code(request, event_id):
         recipients = request.POST.get('recipients')
         recipient_list = [email.strip() for email in recipients.split(',')]
 
-        # Modifica del link per includere la pagina di accettazione privacy
-        access_url = request.build_absolute_uri(f"/privacy-policy/{event.id}/")
+        # Link alla politica sulla privacy prima di accedere
+        privacy_url = request.build_absolute_uri(f"/privacy-policy/{event.id}/")
 
-        subject = f"Codice di Accesso per l'Evento: {event.name}"
-        message = (
-            f"Ciao,\n\n"
-            f"Ti è stato condiviso il codice di accesso per l'evento \"{event.name}\":\n\n"
-            f"Codice: {event.access_code}\n"
-            f"Prezzo per Foto: {event.price_per_photo} €\n\n"
-            f"Prima di accedere, accetta la nostra politica sulla privacy qui: {access_url}\n\n"
-            f"Grazie!"
-        )
+        # Link all'evento
+        access_url = request.build_absolute_uri(f"/evento/{event.id}/")
+
+        # Recupera la prima foto dell'evento come anteprima (se disponibile)
+        foto_anteprima = event.photos.first.file_path.url if event.photos.exists() else "URL_IMMAGINE_DI_DEFAULT"
+
+        # Genera il contenuto HTML dell'email
+        html_content = render_to_string("email_templates/event_email.html", {
+            "cliente_nome": "Cliente",
+            "access_code": event.access_code,
+            "link_evento": access_url,
+            "foto_anteprima": foto_anteprima,
+            "price_per_photo": event.price_per_photo,
+            "privacy_url": privacy_url
+        })
+
+        # Genera la versione testuale per fallback
+        text_content = strip_tags(html_content)
 
         try:
-            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+            email = EmailMultiAlternatives(
+                subject=f"Codice di Accesso per l'Evento: {event.name}",
+                body=text_content,
+                from_email=settings.EMAIL_HOST_USER,
+                to=recipient_list,
+            )
+            email.attach_alternative(html_content, "text/html")  # Aggiunge la versione HTML
+            email.send()
+
             messages.success(request, "Email inviata con successo!")
         except Exception as e:
             messages.error(request, f"Errore durante l'invio dell'email: {e}")

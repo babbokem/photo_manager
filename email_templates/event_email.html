@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Il tuo evento fotografico è pronto!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header img {
+            max-width: 100px;
+        }
+        .preview-img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 15px 25px;
+            font-size: 16px;
+            color: white;
+            background: #007BFF;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="LOGO_URL" alt="Il tuo logo">
+            <h2>Ciao {{ cliente_nome }}, il tuo evento è pronto!</h2>
+        </div>
+        <p>Abbiamo preparato la tua galleria fotografica. Clicca sul pulsante qui sotto per visualizzarla e acquistare le tue foto preferite.</p>
+        <img src="{{ foto_anteprima }}" alt="Anteprima evento" class="preview-img">
+        <br>
+        <a href="{{ link_evento }}" class="button">Visualizza il tuo evento</a>
+        <p>Codice di accesso: <strong>{{ access_code }}</strong></p>
+        <p>Prezzo per Foto: <strong>{{ price_per_photo }} €</strong></p>
+        <p>Prima di accedere, accetta la nostra <a href="{{ privacy_url }}">politica sulla privacy</a>.</p>
+        <p>Grazie per aver scelto i nostri servizi!</p>
+        <div class="footer">
+            <p>Se hai domande, puoi contattarci a <a href="mailto:tuaemail@example.com">tuaemail@example.com</a></p>
+            <p>&copy; 2025 Il Tuo Studio Fotografico</p>
+        </div>
+    </div>
+</body>
+</html>
