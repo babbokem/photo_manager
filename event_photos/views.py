@@ -351,19 +351,25 @@ def send_access_code(request, event_id):
 
         # Ottenere la prima foto come anteprima
         first_photo = event.photos.all().first()
-        if first_photo:
-            foto_anteprima = request.build_absolute_uri(first_photo.file_path.url)  # ✅ URL ASSOLUTO
-        else:
-            foto_anteprima = request.build_absolute_uri('/static/images/default_event.jpg')  # ✅ Immagine di default
+        foto_anteprima = request.build_absolute_uri(first_photo.file_path.url) if first_photo else request.build_absolute_uri('/static/images/default_event.jpg')
+
+        # Creare URL assoluti per le icone social
+        social_icons = {
+            "whatsapp": request.build_absolute_uri('/static/icons/whatsapp.png'),
+            "instagram": request.build_absolute_uri('/static/icons/instagram.png'),
+            "facebook": request.build_absolute_uri('/static/icons/facebook.png'),
+            "email": request.build_absolute_uri('/static/icons/email.png'),
+        }
 
         # Generare il contenuto HTML dell'email
         html_content = render_to_string("event_email.html", {
             "cliente_nome": "Cliente",
             "access_code": event.access_code,
-            "link_evento": access_url,
-            "foto_anteprima": foto_anteprima,  # ✅ Passato già come URL assoluto
+            "link_evento": privacy_url,
+            "foto_anteprima": foto_anteprima,
             "price_per_photo": event.price_per_photo,
-            "privacy_url": privacy_url
+            "privacy_url": privacy_url,
+            "social_icons": social_icons  # ✅ Passo gli URL assoluti al template
         })
 
         text_content = strip_tags(html_content)
