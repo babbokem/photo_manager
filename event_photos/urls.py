@@ -56,4 +56,5 @@ urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # Servire i file media in produzione con il proxy inverso (Nginx) o tramite la configurazione di Django
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]
