@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codice di Accesso - {{ event.name }}</title>
+    <title>Le tue foto sono pronte!</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f8f9fa;
+            background-color: #f2f2f2; /* Sfondo grigio chiaro */
             color: #333;
             padding: 20px;
         }
@@ -31,21 +31,25 @@
         }
         .button {
             display: inline-block;
-            padding: 10px 20px;
-            background: #aaafb4;
-            color: rgba(24, 10, 10, 0.096);
+            padding: 12px 25px;
+            background: #007BFF;
+            color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
+            font-size: 16px;
         }
         .footer {
             margin-top: 20px;
             font-size: 14px;
             color: #555;
         }
+        .social-icons {
+            margin-top: 15px;
+        }
         .social-icons img {
-            width: 40px;
-            margin: 10px;
+            width: 35px;
+            margin: 5px;
         }
     </style>
 </head>
@@ -55,16 +59,12 @@
        
         <p>Prezzo per foto: <strong>{{ price_per_photo }} €</strong></p>
         <p>
-            <a href="{{ link_evento }}" class="button">Vai all'acquisto delle foto </a>
+            <a href="{{ link_evento }}" class="button">Vai all'acquisto delle foto</a>
         </p>  
+        
         {% if foto_anteprima %}
         <img src="{{ foto_anteprima }}" alt="Anteprima evento" class="event-image">
         {% endif %}
-    
-
-       
-
-        
 
         <hr>
 
@@ -79,23 +79,21 @@
         <hr>
 
         <!-- 🔗 COLLEGAMENTI SOCIAL -->
-<p>Seguici sui social:</p>
-<div class="social-icons">
-    <a href="https://wa.me/393313021247">
-        <img src="{{ social_icons.whatsapp }}" alt="WhatsApp">
-    </a>
-    <a href="https://www.instagram.com/agenziafmc">
-        <img src="{{ social_icons.instagram }}" alt="Instagram">
-    </a>
-    <a href="https://www.facebook.com/agenziafmc">
-        <img src="{{ social_icons.facebook }}" alt="Facebook">
-    </a>
-    <a href="mailto:info@agenziafmc.it">
-        <img src="{{ social_icons.email }}" alt="Email">
-    </a>
-</div>
-
-
+        <p>Seguici sui social:</p>
+        <div class="social-icons">
+            <a href="https://wa.me/393313021247">
+                <img src="{{ social_icons.whatsapp }}" alt="WhatsApp">
+            </a>
+            <a href="https://www.instagram.com/agenziafmc">
+                <img src="{{ social_icons.instagram }}" alt="Instagram">
+            </a>
+            <a href="https://www.facebook.com/agenziafmc">
+                <img src="{{ social_icons.facebook }}" alt="Facebook">
+            </a>
+            <a href="mailto:info@agenziafmc.it">
+                <img src="{{ social_icons.email }}" alt="Email">
+            </a>
+        </div>
 
         <p class="footer">Grazie per aver scelto il nostro servizio! 📸</p>
     </div>
