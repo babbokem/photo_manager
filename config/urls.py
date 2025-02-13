@@ -43,6 +43,8 @@ urlpatterns = [
     path('view-foto/', views.view_foto, name='view_foto'),  # Aggiungi questa rotta
     # Aggiungi questa riga per servire i file multimediali in produzione
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+
 ]
 
 
