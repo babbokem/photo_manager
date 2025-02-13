@@ -353,14 +353,7 @@ def send_access_code(request, event_id):
         first_photo = event.photos.all().first()
         foto_anteprima = request.build_absolute_uri(first_photo.file_path.url) if first_photo else request.build_absolute_uri('/static/images/default_event.jpg')
 
-        # Creare URL assoluti per le icone social
-        social_icons = {
-            "whatsapp": request.build_absolute_uri('/static/icon/whatsapp.png'),
-            "instagram": request.build_absolute_uri('/static/icon/instagram.png'),
-            "facebook": request.build_absolute_uri('/static/icon/facebook.png'),
-            "email": request.build_absolute_uri('/static/icon/email.png'),
-        }
-
+       
         
         # Generare il contenuto HTML dell'email
         # Aggiungi i percorsi assoluti delle icone dei social
