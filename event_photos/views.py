@@ -355,10 +355,10 @@ def send_access_code(request, event_id):
 
         # Creare URL assoluti per le icone social
         social_icons = {
-            "whatsapp": request.build_absolute_uri('/static/icons/whatsapp.png'),
-            "instagram": request.build_absolute_uri('/static/icons/instagram.png'),
-            "facebook": request.build_absolute_uri('/static/icons/facebook.png'),
-            "email": request.build_absolute_uri('/static/icons/email.png'),
+            "whatsapp": request.build_absolute_uri('/static/icon/whatsapp.png'),
+            "instagram": request.build_absolute_uri('/static/icon/instagram.png'),
+            "facebook": request.build_absolute_uri('/static/icon/facebook.png'),
+            "email": request.build_absolute_uri('/static/icon/email.png'),
         }
 
         

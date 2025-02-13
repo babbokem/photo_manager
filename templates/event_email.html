@@ -51,20 +51,18 @@
 </head>
 <body>
     <div class="container">
-        <h2>Ciao {{ cliente_nome }}, il tuo evento è pronto!</h2>
-        <p>Hai ricevuto un codice di accesso per visualizzare le tue foto.</p>
-
-        <p><strong>Codice di accesso:</strong> {{ access_code }}</p>
+        <h2>Le tue foto sono pronte!</h2>
+       
         <p>Prezzo per foto: <strong>{{ price_per_photo }} €</strong></p>
-
+        <p>
+            <a href="{{ link_evento }}" class="button">Vai all'acquisto delle foto </a>
+        </p>  
         {% if foto_anteprima %}
         <img src="{{ foto_anteprima }}" alt="Anteprima evento" class="event-image">
         {% endif %}
     
 
-        <p>
-            <a href="{{ link_evento }}" class="button">Vai all'evento</a>
-        </p>
+       
 
         
 
