@@ -26,6 +26,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 import logging
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 logger = logging.getLogger(__name__)
@@ -342,26 +343,29 @@ def send_access_code(request, event_id):
         recipients = request.POST.get('recipients')
         recipient_list = [email.strip() for email in recipients.split(',')]
 
-        # Link alla politica sulla privacy prima di accedere
+        # Link alla privacy policy
         privacy_url = request.build_absolute_uri(f"/privacy-policy/{event.id}/")
 
         # Link all'evento
         access_url = request.build_absolute_uri(f"/evento/{event.id}/")
 
-        # Recupera la prima foto dell'evento come anteprima (se disponibile)
-        foto_anteprima = event.photos.first.file_path.url if event.photos.exists() else "URL_IMMAGINE_DI_DEFAULT"
+        # Ottenere la prima foto come anteprima
+        first_photo = event.photos.all().first()
+        if first_photo:
+            foto_anteprima = request.build_absolute_uri(first_photo.file_path.url)  # ✅ URL ASSOLUTO
+        else:
+            foto_anteprima = request.build_absolute_uri('/static/images/default_event.jpg')  # ✅ Immagine di default
 
-        # Genera il contenuto HTML dell'email
-        html_content = render_to_string("email_templates/event_email.html", {
+        # Generare il contenuto HTML dell'email
+        html_content = render_to_string("event_email.html", {
             "cliente_nome": "Cliente",
             "access_code": event.access_code,
             "link_evento": access_url,
-            "foto_anteprima": foto_anteprima,
+            "foto_anteprima": foto_anteprima,  # ✅ Passato già come URL assoluto
             "price_per_photo": event.price_per_photo,
             "privacy_url": privacy_url
         })
 
-        # Genera la versione testuale per fallback
         text_content = strip_tags(html_content)
 
         try:
@@ -371,7 +375,7 @@ def send_access_code(request, event_id):
                 from_email=settings.EMAIL_HOST_USER,
                 to=recipient_list,
             )
-            email.attach_alternative(html_content, "text/html")  # Aggiunge la versione HTML
+            email.attach_alternative(html_content, "text/html")  
             email.send()
 
             messages.success(request, "Email inviata con successo!")
@@ -381,6 +385,7 @@ def send_access_code(request, event_id):
         return redirect('dashboard')
 
     return render(request, 'send_email.html', {'event': event})
+
 
 
 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codice di Accesso - {{ event.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #007BFF;
+        }
+        .event-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .social-icons img {
+            width: 40px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Ciao {{ cliente_nome }}, il tuo evento è pronto!</h2>
+        <p>Hai ricevuto un codice di accesso per visualizzare le tue foto.</p>
+
+        <p><strong>Codice di accesso:</strong> {{ access_code }}</p>
+        <p>Prezzo per foto: <strong>{{ price_per_photo }} €</strong></p>
+
+        {% if foto_anteprima %}
+        <img src="{{ foto_anteprima }}" alt="Anteprima evento" class="event-image">
+        {% endif %}
+    
+
+        <p>
+            <a href="{{ link_evento }}" class="button">Vai all'evento</a>
+        </p>
+
+        <p>Prima di accedere, accetta la nostra <a href="{{ privacy_url }}" style="color: #007BFF;">Politica sulla Privacy</a>.</p>
+
+        <hr>
+
+        <!-- 📷 INFORMAZIONI AGENZIA FOTOGRAFICA -->
+        <h3 style="color: #007BFF;">AGENZIA FOTOGRAFICA FMC</h3>
+        <p><strong>Segreteria:</strong> +39 3338227785 / 3293369382</p>
+        <p><strong>WhatsApp:</strong> <a href="https://wa.me/393313021247" style="color: #007BFF; text-decoration: none;">3313021247</a></p>
+        <p><strong>Email:</strong> <a href="mailto:info@agenziafmc.it" style="color: #007BFF; text-decoration: none;">info@agenziafmc.it</a></p>
+        <p>📍 Via Fiume delle Perle 11 - 00144 Roma (RM)</p>
+        <p>P. IVA 15095691000</p>
+
+        <hr>
+
+        <!-- 🔗 COLLEGAMENTI SOCIAL -->
+<p>Seguici sui social:</p>
+<div class="social-icons">
+    <a href="https://wa.me/393313021247">
+        <img src="{{ social_icons.whatsapp }}" alt="WhatsApp">
+    </a>
+    <a href="https://www.instagram.com/tua_pagina">
+        <img src="{{ social_icons.instagram }}" alt="Instagram">
+    </a>
+    <a href="https://www.facebook.com/tua_pagina">
+        <img src="{{ social_icons.facebook }}" alt="Facebook">
+    </a>
+    <a href="mailto:info@agenziafmc.it">
+        <img src="{{ social_icons.email }}" alt="Email">
+    </a>
+</div>
+
+
+        <p class="footer">Grazie per aver scelto il nostro servizio! 📸</p>
+    </div>
+</body>
+</html>
