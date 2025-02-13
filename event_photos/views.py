@@ -358,10 +358,10 @@ def send_access_code(request, event_id):
         # Generare il contenuto HTML dell'email
         # Aggiungi i percorsi assoluti delle icone dei social
         social_icons = {
-        "whatsapp": request.build_absolute_uri(settings.STATIC_URL + "icons/whatsapp.png"),
-        "instagram": request.build_absolute_uri(settings.STATIC_URL + "icons/instagram.png"),
-        "facebook": request.build_absolute_uri(settings.STATIC_URL + "icons/facebook.png"),
-        "email": request.build_absolute_uri(settings.STATIC_URL + "icons/email.png"),
+        "whatsapp": request.build_absolute_uri(settings.STATIC_URL + "icon/whatsapp.png"),
+        "instagram": request.build_absolute_uri(settings.STATIC_URL + "icon/instagram.png"),
+        "facebook": request.build_absolute_uri(settings.STATIC_URL + "icon/facebook.png"),
+        "email": request.build_absolute_uri(settings.STATIC_URL + "icon/email.png"),
         }
         
         
