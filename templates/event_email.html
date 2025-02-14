@@ -16,18 +16,18 @@
             max-width: 600px;
             margin: auto;
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
         .logo {
-            max-width: 150px;
+            max-width: 120px;
             margin-bottom: 15px;
         }
         h2 {
             color: #000;
             font-size: 22px;
-            margin-bottom: 15px;
+            margin: 15px 0;
         }
         .event-image {
             max-width: 80%;
@@ -44,6 +44,7 @@
             border-radius: 5px;
             font-weight: bold;
             font-size: 16px;
+            margin-top: 10px;
         }
         .footer {
             margin-top: 20px;
@@ -62,10 +63,8 @@
         <img src="{{ social_icons.logo }}" alt="Logo Agenzia" class="logo">
 
         <!-- Titolo della Galleria -->
-        <h2>La tua Galleria è Pronta - <strong>{{ event.name }}</strong></h2>
-
-        <!-- Prezzo per foto -->
-        <p>Prezzo per foto: <strong>{{ price_per_photo }} €</strong></p>
+        <h2>La tua Galleria è Pronta!</h2>
+        <p><strong>{{ event.name }}</strong></p>
 
         <!-- Immagine di anteprima -->
         {% if foto_anteprima %}
