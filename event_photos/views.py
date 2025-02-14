@@ -358,6 +358,7 @@ def send_access_code(request, event_id):
         # Generare il contenuto HTML dell'email
         # Aggiungi i percorsi assoluti delle icone dei social
         social_icons = {
+        "logo": request.build_absolute_uri(settings.STATIC_URL + "icon/logo.png"),
         "whatsapp": request.build_absolute_uri(settings.STATIC_URL + "icon/whatsapp.png"),
         "instagram": request.build_absolute_uri(settings.STATIC_URL + "icon/instagram.png"),
         "facebook": request.build_absolute_uri(settings.STATIC_URL + "icon/facebook.png"),
