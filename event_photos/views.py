@@ -296,13 +296,13 @@ def privacy_policy(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == "POST":
-        request.session[f'privacy_accepted_{event_id}'] = True
-        access_code = event.access_code
+        request.session[f'privacy_accepted_{event_id}'] = True  # Salva che l'utente ha accettato
 
-        # Reindirizza alla galleria senza chiedere il login
-        return redirect(f"/evento/{event.id}/?access_code={access_code}")
+        # Reindirizza alla pagina di acquisto
+        return redirect('purchase_photos', event_id=event.id)
 
     return render(request, 'privacy_policy.html', {'event': event})
+
 
 
 
@@ -406,10 +406,16 @@ def send_access_code(request, event_id):
 
 
 
-@login_required
+
 def purchase_photos(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     photos = event.photos.all()
+
+       # Controlla se la privacy è stata accettata
+    privacy_accepted = request.session.get(f'privacy_accepted_{event_id}', False)
+    if not privacy_accepted:
+        messages.error(request, "Devi accettare la privacy policy per procedere all'acquisto.")
+        return redirect('privacy_policy', event_id=event.id)
     context = {
         'event': event,
         'photos': photos,
