@@ -320,6 +320,10 @@ def check_media_path(request):
 
 
 
+def dettagli_privacy(request):
+    return render(request, 'dettagli_privacy.html')  # Assicurati di avere questo file HTML
+
+
 def event_photos(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     

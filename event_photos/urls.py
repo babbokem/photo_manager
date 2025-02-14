@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views  # Importa le view definite nel file views.py
-from .views import check_media_path
+from .views import check_media_path,privacy_policy, dettagli_privacy
 from .views import create_checkout_session
 from django.conf import settings
 from django.conf.urls.static import static
@@ -43,6 +43,8 @@ urlpatterns = [
     path('list-media/', views.list_media_files, name='list_media_files'),
     path('list-all-files/', views.list_all_files, name='list_all_files'),
     path('view-foto/', views.view_foto, name='view_foto'),  # Aggiungi questa rotta
+    path('privacy-policy/<int:event_id>/', privacy_policy, name='privacy_policy'),
+    path('dettagli-privacy/', dettagli_privacy, name='dettagli_privacy'),  # Nuovo URL per la privacy completa
     ]
 
 

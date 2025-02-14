@@ -1,9 +1,27 @@
-<h2>Politica sulla Privacy</h2>
-<p>Per continuare, accetta la nostra politica sulla privacy.</p>
+{% extends 'base.html' %}
 
-<form method="post">
+{% block content %}
+  <h2>Politica sulla Privacy</h2>
+  <p>
+    Per continuare con l'acquisto delle foto dell'evento <strong>{{ event.name }}</strong>,
+    devi accettare la nostra politica sulla privacy.
+  </p>
+
+  <!-- Link per leggere i dettagli -->
+  <p>
+    <a href="{% url 'dettagli_privacy' %}" target="_blank" style="color: #007BFF; text-decoration: none; font-weight: bold;">
+      📄 Leggi i dettagli della Privacy Policy
+    </a>
+  </p>
+
+  <form method="post">
     {% csrf_token %}
+    <input type="hidden" name="event_id" value="{{ event.id }}">
+    <label>
+      <input type="checkbox" name="accept_privacy" required>
+      Accetto la politica sulla privacy.
+    </label>
+    <br><br>
     <button type="submit" class="btn btn-primary">Accetto e Procedi</button>
-</form>
-
-<p><a href="{% url 'dettagli_privacy' %}" target="_blank">Leggi i dettagli della Privacy Policy</a></p>
+  </form>
+{% endblock %}
