@@ -296,12 +296,14 @@ def privacy_policy(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == "POST":
-        # Salva il consenso nella sessione o nel database
         request.session[f'privacy_accepted_{event_id}'] = True
-        return redirect('purchase_photos', event_id=event.id)
+        access_code = event.access_code
 
+        # Reindirizza alla galleria senza chiedere il login
+        return redirect(f"/evento/{event.id}/?access_code={access_code}")
 
     return render(request, 'privacy_policy.html', {'event': event})
+
 
 
 
@@ -317,22 +319,21 @@ def check_media_path(request):
         return HttpResponse(f"File NON trovato! Django sta cercando in: {media_path}")
 
 
-@login_required
+
 def event_photos(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    
+    # Controlla se l'utente ha accettato la privacy e ha un codice valido
+    access_code = request.GET.get('access_code', '')
+    privacy_accepted = request.session.get(f'privacy_accepted_{event_id}', False)
+
+    if access_code != event.access_code or not privacy_accepted:
+        messages.error(request, "Accesso non autorizzato. Assicurati di accettare la privacy policy e di usare il codice corretto.")
+        return redirect('access_event')
+
     photos = event.photos.all()
+    return render(request, 'event_photos.html', {'event': event, 'photos': photos})
 
-    if request.method == 'POST' and 'add_to_cart' in request.POST:
-        selected_photos = request.POST.getlist('photos')
-        if selected_photos:
-            messages.success(request, f"Hai aggiunto {len(selected_photos)} foto al carrello!")
-        else:
-            messages.warning(request, "Non hai selezionato alcuna foto.")
-
-    return render(request, 'event_photos.html', {
-        'event': event,
-        'photos': photos,
-    })
 
 
 @login_required
