@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codice di Accesso - {{ event.name }}</title>
+    <title>La tua Galleria è Pronta - {{ event.name }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #e6e6e6; /* Grigio chiaro */
+            background-color: #f2f2f2; /* Sfondo grigio chiaro */
             color: #333;
             padding: 20px;
         }
@@ -21,26 +21,29 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
         .logo {
-            max-width: 150px; /* Regola la dimensione del logo */
+            max-width: 150px;
             margin-bottom: 15px;
         }
         h2 {
-            color: #007BFF;
+            color: #000;
+            font-size: 22px;
+            margin-bottom: 15px;
         }
         .event-image {
-            max-width: 50%;
+            max-width: 80%;
             height: auto;
             border-radius: 10px;
             margin: 20px 0;
         }
         .button {
             display: inline-block;
-            padding: 10px 20px;
-            background: #007BFF;
+            padding: 12px 20px;
+            background: #000;
             color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
+            font-size: 16px;
         }
         .footer {
             margin-top: 20px;
@@ -48,27 +51,31 @@
             color: #555;
         }
         .social-icons img {
-            width: 40px;
-            margin: 10px;
+            width: 35px;
+            margin: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- LOGO -->
+        <!-- Logo -->
         <img src="{{ social_icons.logo }}" alt="Logo Agenzia" class="logo">
 
-        <h2>La tua galleria è pronta!</h2>
-        <p><strong>Nome della galleria:</strong> {{ event.name }}</p>
+        <!-- Titolo della Galleria -->
+        <h2>La tua Galleria è Pronta - <strong>{{ event.name }}</strong></h2>
 
+        <!-- Prezzo per foto -->
         <p>Prezzo per foto: <strong>{{ price_per_photo }} €</strong></p>
-        <p>
-            <a href="{{ link_evento }}" class="button">Vai all'acquisto delle foto</a>
-        </p>  
 
+        <!-- Immagine di anteprima -->
         {% if foto_anteprima %}
-        <img src="{{ foto_anteprima }}" alt="Anteprima evento" class="event-image">
+            <img src="{{ foto_anteprima }}" alt="Anteprima evento" class="event-image">
         {% endif %}
+
+        <!-- Pulsante per Visualizzare la Galleria -->
+        <p>
+            <a href="{{ link_evento }}" class="button">VISUALIZZA GALLERIA</a>
+        </p>
 
         <hr>
 
