@@ -79,9 +79,7 @@
                                     <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#photoModal{{ event.id }}">
                                         Vedi Foto
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#emailModal{{ event.id }}">
-                                        Invia Email
-                                    </button>
+                               
                                 </td>
                             </tr>
 
@@ -148,5 +146,40 @@
         </div>
 
     </div>
+    <!-- Pulsante per inviare tutti gli eventi -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Azioni Globali</h5>
+        <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#sendAllEventsModal">
+            Invia Tutti gli Eventi
+        </button>
+    </div>
+</div>
+
+<!-- MODAL INVIO TUTTI GLI EVENTI -->
+<div class="modal fade" id="sendAllEventsModal" tabindex="-1" aria-labelledby="sendAllEventsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendAllEventsModalLabel">Invia Tutti gli Eventi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'send_all_events_email' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="recipients_all" class="form-label">Destinatari (separati da virgola)</label>
+                        <textarea class="form-control" id="recipients_all" name="recipients" rows="3" placeholder="esempio1@email.com, esempio2@email.com"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                        <button type="submit" class="btn btn-primary">Invia Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

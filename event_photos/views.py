@@ -290,18 +290,32 @@ def dashboard(request):
 
 
 
-
-
 def privacy_policy(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
+    if request.method == 'POST':
+        request.session[f'privacy_accepted_{event_id}'] = True
+        request.session.modified = True
 
-    if request.method == "POST":
-        request.session[f'privacy_accepted_{event_id}'] = True  # Salva che l'utente ha accettato
+        # 🔍 Recupera il codice di accesso dalla sessione o dall'URL
+        access_code = request.GET.get('access_code', request.session.get(f'access_code_{event_id}', ''))
 
-        # Reindirizza alla pagina di acquisto
-        return redirect('purchase_photos', event_id=event.id)
+        print(f"DEBUG - Privacy accettata per l'evento {event_id}")
+        print(f"DEBUG - Codice di accesso recuperato: '{access_code}'")
 
-    return render(request, 'privacy_policy.html', {'event': event})
+        # ✅ Dopo la privacy, reindirizza all'evento passando il codice
+        return redirect(f'/event/{event_id}/?access_code={access_code}')
+
+    return render(request, 'privacy_policy.html', {'event_id': event_id})
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -324,19 +338,48 @@ def dettagli_privacy(request):
     return render(request, 'dettagli_privacy.html')  # Assicurati di avere questo file HTML
 
 
+
+
+
+
+
+
+
+
+
 def event_photos(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    
-    # Controlla se l'utente ha accettato la privacy e ha un codice valido
-    access_code = request.GET.get('access_code', '')
-    privacy_accepted = request.session.get(f'privacy_accepted_{event_id}', False)
-
-    if access_code != event.access_code or not privacy_accepted:
-        messages.error(request, "Accesso non autorizzato. Assicurati di accettare la privacy policy e di usare il codice corretto.")
-        return redirect('access_event')
-
     photos = event.photos.all()
-    return render(request, 'event_photos.html', {'event': event, 'photos': photos})
+
+    # 🔍 Recupera il carrello dalla sessione
+    cart_data = request.session.get("cart", {})
+    selected_photo_ids = []
+    cart_photos = []
+    total_amount = 0
+
+    for event_items in cart_data.values():
+        for item in event_items:
+            selected_photo_ids.append(item.get("photo_id"))
+            cart_photos.append(item)
+            total_amount += item.get("price", 0)
+
+    return render(request, 'event_photos.html', {
+        'event': event,
+        'photos': photos,
+        'cart_photos': cart_photos,
+        'cart_total': total_amount,
+        'selected_photo_ids': selected_photo_ids,
+    })
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -349,7 +392,9 @@ def send_access_code(request, event_id):
         recipient_list = [email.strip() for email in recipients.split(',')]
 
         # Link alla privacy policy
-        privacy_url = request.build_absolute_uri(f"/privacy-policy/{event.id}/")
+        
+        
+        privacy_url = request.build_absolute_uri(reverse('privacy_policy_all'))
 
         # Link all'evento
         access_url = request.build_absolute_uri(f"/evento/{event.id}/")
@@ -541,49 +586,71 @@ def upload_zip(request, event_id):
 
 
 
-@login_required
+
 def access_event(request):
     """
-    Consente di accedere a un evento tramite un codice di accesso.
+    Consente l'accesso a un evento tramite un codice di accesso.
     """
     if request.method == 'POST':
         access_code = request.POST.get('access_code', '').strip()
-        try:
-            # Cerca l'evento con il codice di accesso fornito
-            event = Event.objects.get(access_code=access_code)
+        event = Event.objects.filter(access_code=access_code).first()
+
+        if event:
+            # Salva nella sessione che l'utente ha accettato la privacy policy
+            request.session[f'privacy_accepted_{event.id}'] = True
+            request.session.modified = True  # Assicura che la sessione venga salvata
+
+            messages.success(request, "Accesso effettuato con successo!")
             return redirect('event_photos', event_id=event.id)
-        except Event.DoesNotExist:
-            messages.error(request, "Codice di accesso non valido.")
+        else:
+            messages.error(request, "Codice di accesso non valido. Riprova.")
 
     return render(request, 'access_event.html')
 
 
+
 @login_required
 def cart(request):
-    cart_items = request.session.get('cart_items', [])
+    cart_data = request.session.get("cart", {})  # Recupera il carrello dalla sessione
 
-    if request.method == 'POST':
-        if 'photo_id' in request.POST:
-            photo_id = request.POST.get('photo_id')
-            if photo_id and photo_id not in cart_items:
-                cart_items.append(photo_id)
-                request.session['cart_items'] = cart_items
-                messages.success(request, "Foto aggiunta al carrello.")
-            else:
-                messages.warning(request, "Questa foto è già nel carrello.")
-        
-        if 'checkout' in request.POST:
-            return redirect('create_checkout_session')
+    print("DEBUG - Contenuto del carrello in cart():", cart_data)  # Stampa il carrello per il debug
 
-    photos = Photo.objects.filter(id__in=cart_items)
-    total_amount = sum(photo.price for photo in photos) * 100  # Converti in centesimi
+    photos = []
+    total_amount = 0
+
+    if not isinstance(cart_data, dict):
+        cart_data = {}  # Assicura che sia un dizionario
+
+    for event_id, items in cart_data.items():
+        for item in items:
+            photo_id = item.get("photo_id")
+            event_name = item.get("event_name")
+            price = float(item.get("price", 0))  # Converti in float per evitare errori
+
+            # Recupera la foto dal database
+            photo = Photo.objects.filter(id=photo_id).first()
+            if photo:
+                photos.append({
+                    "photo_id": photo.id,
+                    "photo_url": photo.file_path.url,
+                    "event_name": event_name,
+                    "price": price,
+                })
+                total_amount += price
+
+    print("DEBUG - Foto nel carrello:", photos)  # Stampa il contenuto del carrello
 
     return render(request, 'cart.html', {
         'photos': photos,
-        'cart_count': len(cart_items),
+        'cart_count': len(photos),
         'total_amount': total_amount,
         'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY
     })
+
+
+
+
+
 @login_required
 def delete_photo(request, photo_id):
     photo = get_object_or_404(Photo, id=photo_id)
@@ -626,11 +693,7 @@ def list_media_files(request):
         return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)
     
 
-    
 
-    import os
-from django.http import HttpResponse
-from django.shortcuts import render
 
 def list_all_files(request):
     # Percorso di partenza, qui puoi mettere "/" per esplorare tutto il filesystem
@@ -736,3 +799,170 @@ def view_foto(request):
 
     except Exception as e:
         return HttpResponse(f"Errore durante la lettura dei file: {str(e)}", status=500)
+
+
+
+
+
+
+def all_events(request):
+    if not request.session.get('privacy_global_accepted'):
+        return redirect('privacy_policy_all')
+    
+    events = Event.objects.all()
+    return render(request, 'all_events.html', {'events': events})
+
+def privacy_policy_all(request):
+    if request.method == 'POST':
+        request.session['privacy_global_accepted'] = True
+        return redirect('all_events')  # Sempre e solo qui
+
+    return render(request, 'privacy_policy_all.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.urls import reverse
+from django.conf import settings
+from .models import Event
+
+@login_required
+def send_all_events_email(request):
+    if request.method == "POST":
+        recipients = request.POST.get("recipients")
+        recipient_list = [email.strip() for email in recipients.split(',') if email.strip()]
+
+        events = Event.objects.all()
+
+        all_event_data = []
+        for event in events:
+            foto_anteprima = event.photos.first().file_path.url if event.photos.exists() else "/static/images/default_event.jpg"
+            link_privacy = request.build_absolute_uri(reverse("privacy_policy_all"))
+            all_event_data.append({
+                "name": event.name,
+                "description": event.description,
+                "foto_anteprima": request.build_absolute_uri(foto_anteprima),
+                "link_privacy": link_privacy,
+            })
+
+        social_icons = {
+            "logo": request.build_absolute_uri(settings.STATIC_URL + "icon/logo.png"),
+            "whatsapp": request.build_absolute_uri(settings.STATIC_URL + "icon/whatsapp.png"),
+            "instagram": request.build_absolute_uri(settings.STATIC_URL + "icon/instagram.png"),
+            "facebook": request.build_absolute_uri(settings.STATIC_URL + "icon/facebook.png"),
+            "email": request.build_absolute_uri(settings.STATIC_URL + "icon/email.png"),
+        }
+
+        html_content = render_to_string("all_events_email.html", {
+            "events": all_event_data,
+            "social_icons": social_icons,
+        })
+
+        text_content = strip_tags(html_content)
+
+        try:
+            email = EmailMultiAlternatives(
+                subject="📸 Le tue Gallerie Foto sono pronte!",
+                body=text_content,
+                from_email=settings.EMAIL_HOST_USER,
+                to=recipient_list,
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+
+            messages.success(request, "Email inviata con successo!")
+        except Exception as e:
+            messages.error(request, f"Errore durante l'invio dell'email: {e}")
+
+        return redirect('dashboard')
+
+    return redirect('dashboard')
+
+
+
+
+
+
+
+def event_detail(request, access_code):
+    """
+    Mostra i dettagli di un evento specifico.
+    """
+    event = get_object_or_404(Event, access_code=access_code)
+    return render(request, 'event_detail.html', {'event': event})
+
+
+
+
+
+
+@login_required
+def add_to_cart(request):
+    if request.method == "POST":
+        event_id = request.POST.get("event_id")
+        selected_photos = request.POST.getlist("selected_photos")
+
+        # Recupera il carrello dalla sessione
+        cart = request.session.get("cart", {})
+
+        # Assicuriamoci che `cart` sia un dizionario
+        if not isinstance(cart, dict):
+            cart = {}
+
+        if event_id not in cart:
+            cart[event_id] = []
+
+        for photo_id in selected_photos:
+            photo = Photo.objects.filter(id=photo_id).first()
+            if photo:
+                cart[event_id].append({
+                    "photo_id": photo.id,
+                    "photo_url": photo.file_path.url,
+                    "event_name": photo.event.name,
+                    "price": float(photo.event.price_per_photo),  # ✅ Convertito in float
+                })
+
+        # Salviamo il carrello nella sessione
+        request.session["cart"] = cart
+        request.session.modified = True  # Forziamo Django a salvare la sessione
+
+        messages.success(request, "Foto aggiunta al carrello!")
+        #return redirect("cart_view")  # Reindirizza alla pagina del carrello
+        return redirect('event_photos', event_id=event_id)
+
+
+
+
+
+def remove_from_cart(request, photo_id):
+    cart = request.session.get("cart", {})
+
+    if not isinstance(cart, dict):
+        cart = {}
+
+    for event_id in list(cart.keys()):  # Usa list() per evitare modifiche durante l'iterazione
+        cart[event_id] = [item for item in cart[event_id] if item["photo_id"] != int(photo_id)]
+        if not cart[event_id]:  # Se l'evento è vuoto, rimuovilo dal carrello
+            del cart[event_id]
+
+    request.session["cart"] = cart
+    request.session.modified = True
+
+    messages.success(request, "Foto rimossa dal carrello.")
+    return redirect("cart")

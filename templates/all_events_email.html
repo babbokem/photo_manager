@@ -1,0 +1,99 @@
+{% comment %} TEMPLATE: all_events_email.html {% endcomment %}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Tutte le Gallerie Foto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+        .evento {
+            margin-bottom: 40px;
+        }
+        .evento img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            font-size: 14px;
+            color: #555;
+            margin-top: 40px;
+            text-align: center;
+        }
+        .social-icons img {
+            width: 30px;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img src="{{ social_icons.logo }}" alt="Logo" class="logo">
+    <h2>Tutte le tue gallerie sono pronte!</h2>
+
+    {% for event in events %}
+    <div class="evento">
+        <h3>{{ event.name }}</h3>
+        <p>{{ event.description }}</p>
+        {% if event.foto_anteprima %}
+        <img src="{{ event.foto_anteprima }}" alt="Anteprima">
+        {% endif %}
+        <p>
+            <a href="{{ event.link_privacy }}?next=all" class="button">📸 Visualizza Galleria</a>
+
+
+
+        </p>
+    </div>
+    <hr>
+    {% endfor %}
+
+    <div class="footer">
+        <p>📍 Agenzia Fotografica FMC</p>
+        <p>Via Fiume delle Perle 11 - Roma</p>
+        <p>Email: info@agenziafmc.it | Tel: +39 3338227785</p>
+
+        <div class="social-icons">
+            <a href="https://wa.me/393313021247">
+                <img src="{{ social_icons.whatsapp }}" alt="WhatsApp">
+            </a>
+            <a href="https://www.instagram.com/agenziafmc">
+                <img src="{{ social_icons.instagram }}" alt="Instagram">
+            </a>
+            <a href="https://www.facebook.com/agenziafmc">
+                <img src="{{ social_icons.facebook }}" alt="Facebook">
+            </a>
+            <a href="mailto:info@agenziafmc.it">
+                <img src="{{ social_icons.email }}" alt="Email">
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,82 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrello</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center">Il Tuo Carrello</h1>
+        <h1 class="text-center">🛒 Il Tuo Carrello</h1>
+        <h5 class="text-center text-muted">
+            Hai <strong id="cart-count">{{ cart_count }}</strong> foto nel carrello
+        </h5>
 
-        <div class="row">
-            {% for photo in photos %}
-            <div class="col-md-4 col-sm-6">
-                <div class="card mb-3">
-                    <img src="{{ photo.file_path.url }}" class="card-img-top" alt="{{ photo.original_name }}">
+        <!-- Foto nel carrello -->
+        <div class="row" id="cart-items">
+            {% for photo in cart_photos %}
+            <div class="col-md-4 col-sm-6 cart-item" data-photo-id="{{ photo.photo_id }}">
+                <div class="card mb-3 shadow-sm">
+                    <img src="{{ photo.photo_url }}" class="card-img-top" alt="Anteprima">
                     <div class="card-body text-center">
-                        <p>{{ photo.original_name }}</p>
-                        <p><strong>Prezzo: €{{ photo.price }}</strong></p>
+                        <p class="mb-1"><strong>{{ photo.event_name }}</strong></p>
+                        <p>Prezzo: €{{ photo.price }}</p>
+                        <button class="btn btn-danger btn-sm remove-from-cart" data-photo-id="{{ photo.photo_id }}">
+                            ❌ Rimuovi
+                        </button>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <p class="text-center">Il carrello è vuoto.</p>
+            <p class="text-center" id="empty-cart-msg">⚠️ Il carrello è vuoto.</p>
             {% endfor %}
         </div>
 
-        {% if photos %}
-        <h3 class="text-center mt-4">Totale: €{{ total_amount|floatformat:2 }}</h3>
+        {% if cart_photos %}
+        <!-- Riepilogo ordine -->
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title text-center">🧾 Riepilogo Ordine</h4>
+                <p class="text-center">📸 <strong>{{ cart_count }}</strong> foto selezionate</p>
+                <p class="text-center">💰 Totale da pagare: <strong>€<span id="cart-total">{{ cart_total|floatformat:2 }}</span></strong></p>
 
-        <!-- Campo email obbligatorio -->
-        <div class="text-center mt-4">
-            <label for="customer-email">Inserisci la tua email per ricevere le foto:</label>
-            <input type="email" id="customer-email" class="form-control" placeholder="Inserisci la tua email" required>
-        </div>
+                <div class="mb-3">
+                    <label for="customer-email" class="form-label">📧 Inserisci la tua email per ricevere il link di download:</label>
+                    <input type="email" id="customer-email" class="form-control" placeholder="esempio@email.com" required>
+                </div>
 
-        <div class="text-center mt-4">
-            <button id="checkout-button" class="btn btn-success">Procedi all'Acquisto</button>
+                <div class="d-grid gap-2">
+                    <button id="checkout-button" class="btn btn-success">💳 Procedi all'Acquisto</button>
+                </div>
+            </div>
         </div>
         {% endif %}
+
+        <!-- Pulsante per tornare agli eventi -->
+        <div class="text-center mt-4">
+            <a href="{% url 'all_events' %}" class="btn btn-secondary">🔙 Torna agli Eventi</a>
+        </div>
     </div>
 
     <script>
-        var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+        $(document).ready(function() {
+            function updateCart() {
+                $.get("{% url 'cart' %}", function(data) {
+                    $("#cart-items").html($(data).find("#cart-items").html());
+                    $("#cart-total").text($(data).find("#cart-total").text());
+                    $("#cart-count").text($(data).find("#cart-count").text());
 
-        document.getElementById('checkout-button').addEventListener('click', function() {
-            const selectedPhotos = document.querySelectorAll('input[name="photos"]:checked');
-            const photoIds = Array.from(selectedPhotos).map(photo => photo.dataset.photoId);
-            const customerEmail = document.getElementById('customer-email').value;
-
-            if (photoIds.length === 0) {
-                alert("Seleziona almeno una foto.");
-                return;
+                    if ($("#cart-items").children().length === 0) {
+                        $("#empty-cart-msg").show();
+                    } else {
+                        $("#empty-cart-msg").hide();
+                    }
+                });
             }
 
-            if (!customerEmail) {
-                alert("Inserisci un'email valida.");
-                return;
-            }
+            $(".remove-from-cart").on("click", function() {
+                let photoId = $(this).data("photo-id");
+                $.post("{% url 'remove_from_cart' 0 %}".replace('0', photoId), {
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                }, function() {
+                    updateCart();
+                });
+            });
 
-            fetch("{% url 'create_checkout_session' %}", {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ photo_ids: photoIds, email: customerEmail })
-            })
-            .then(response => response.json())
-            .then(session => {
-                if (session.error) {
-                    alert(session.error);
-                } else {
-                    stripe.redirectToCheckout({ sessionId: session.id });
+            $("#checkout-button").on("click", function() {
+                let customerEmail = $("#customer-email").val();
+                let selectedPhotoIds = $(".cart-item").map(function() {
+                    return $(this).data("photo-id");
+                }).get();
+
+                if (!customerEmail) {
+                    alert("Inserisci un'email valida.");
+                    return;
                 }
-            })
-            .catch(error => console.error('Errore:', error));
+
+                $.post("{% url 'create_checkout_session' %}", {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    photo_ids: JSON.stringify(selectedPhotoIds),
+                    email: customerEmail
+                }, function(session) {
+                    if (session.error) {
+                        alert(session.error);
+                    } else {
+                        stripe.redirectToCheckout({ sessionId: session.id });
+                    }
+                });
+            });
         });
     </script>
 </body>

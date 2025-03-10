@@ -9,6 +9,8 @@ from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 import logging
 from datetime import timedelta
+from django.urls import reverse
+
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +56,16 @@ class Event(models.Model):
         verbose_name="Carica ZIP",
         validators=[validate_zip_file]
     )
+
+    def get_absolute_url(self):
+        """
+        Restituisce l'URL della pagina dell'evento per visualizzare e acquistare le foto.
+        """
+        return reverse('event_detail', kwargs={'access_code': self.access_code})
+
+    def __str__(self):
+        return self.name
+    
 
     def save(self, *args, **kwargs):
         """

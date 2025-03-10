@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
 
+{% block title %}Privacy Policy{% endblock %}
+
 {% block content %}
-  <h2>Politica sulla Privacy</h2>
-  <p>
-    Per continuare con l'acquisto delle foto dell'evento <strong>{{ event.name }}</strong>,
-    devi accettare la nostra politica sulla privacy.
-  </p>
+<div class="container mt-5">
+    <h2 class="text-center">🔒 Privacy Policy</h2>
+    <p class="text-center">Leggi attentamente la nostra Privacy Policy prima di accedere alle foto.</p>
 
-  <!-- Link per leggere i dettagli -->
-  <p>
-    <a href="{% url 'dettagli_privacy' %}" target="_blank" style="color: #007BFF; text-decoration: none; font-weight: bold;">
-      📄 Leggi i dettagli della Privacy Policy
-    </a>
-  </p>
+    <!-- Mostra il testo della privacy policy -->
+    <div class="border p-3 mb-3" style="max-height: 300px; overflow-y: auto;">
+        {% include 'dettagli_privacy.html' %}
+    </div>
 
-  <form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="event_id" value="{{ event.id }}">
-    <label>
-      <input type="checkbox" name="accept_privacy" required>
-      Accetto la politica sulla privacy.
-    </label>
-    <br><br>
-    <button type="submit" class="btn btn-primary">Accetto e Procedi</button>
-  </form>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-check text-center">
+            <input type="checkbox" id="accept-privacy" class="form-check-input" required>
+            <label for="accept-privacy" class="form-check-label">✅ Ho preso visione della Privacy Policy</label>
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary w-100">Accetto</button>
+        </div>
+    </form>
+</div>
 {% endblock %}

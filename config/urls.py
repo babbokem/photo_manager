@@ -37,6 +37,8 @@ urlpatterns = [
     path('list-media/', views.list_media_files, name='list_media_files'),
     path('list-all-files/', views.list_all_files, name='list_all_files'),
     path('view-foto/', views.view_foto, name='view_foto'),
+    path('cart/', views.cart, name='cart'),
+
 
     # ✅ Servire file STATICI e MEDIA in produzione
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
