@@ -1,12 +1,22 @@
 {% extends 'base.html' %}
 
+{% block title %}Accettazione Privacy{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
-    <h1>Informativa sulla Privacy</h1>
-    <p>Per visualizzare gli eventi, devi accettare la nostra politica sulla privacy.</p>
-    <form method="post">
+    <h2 class="text-center mb-4">📜 Informativa sulla Privacy</h2>
+
+    <!-- Contenitore scrollabile -->
+    <div class="card shadow-sm p-4" style="max-height: 60vh; overflow-y: auto; background-color: #f9f9f9;">
+
+        {% include "dettagli_privacy.html" %}
+        
+    </div>
+
+    <!-- Pulsante di accettazione -->
+    <form method="post" class="text-center mt-4">
         {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Accetto</button>
+        <button type="submit" class="btn btn-success">✅ Accetto e Visualizzo gli Eventi</button>
     </form>
 </div>
 {% endblock %}
