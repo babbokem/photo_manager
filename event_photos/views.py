@@ -564,14 +564,18 @@ def upload_zip(request, event_id):
                     extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
                     print(f"Estraendo: {extracted_file_path}")  # Debug
 
-                    # Estrai il file nella cartella appropriata
-                    with open(extracted_file_path, 'wb') as f:
-                        f.write(zip_ref.read(file_name))
+                    # Leggi il contenuto del file dall'archivio
+                    image_data = zip_ref.read(file_name)
 
-                    # Salva il percorso del file estratto nel database
-                    relative_path = os.path.relpath(extracted_file_path, settings.MEDIA_ROOT)
-                    print(f"Salvando nel database con il percorso: {relative_path}")  # Debug
-                    Photo.objects.create(event=event, file_path=relative_path, original_name=os.path.basename(file_name))
+                    # Crea un percorso per salvare su S3 o local
+                    filename = f"event_photos/{event.id}/{os.path.basename(file_name)}"
+
+                    # Salva il file usando lo storage predefinito (S3 se USE_S3=true)
+                    saved_path = default_storage.save(filename, BytesIO(image_data))
+
+                    # Salva nel database
+                    Photo.objects.create(event=event, file_path=saved_path, original_name=os.path.basename(file_name))
+
 
         messages.success(request, "Foto caricate con successo dal file ZIP!")
         return redirect('event_photos', event_id=event.id)
