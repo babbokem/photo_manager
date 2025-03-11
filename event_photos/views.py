@@ -895,11 +895,6 @@ def send_all_events_email(request):
     return redirect('dashboard')
 
 
-
-
-
-
-
 def event_detail(request, access_code):
     """
     Mostra i dettagli di un evento specifico.
@@ -912,7 +907,7 @@ def event_detail(request, access_code):
 
 
 
-@login_required
+#@login_required
 def add_to_cart(request):
     if request.method == "POST":
         event_id = request.POST.get("event_id")
