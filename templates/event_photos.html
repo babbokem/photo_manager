@@ -1,7 +1,4 @@
 {% extends 'base.html' %}
-<pre>Codice di accesso salvato: {{ request.session.access_code_13 }}</pre>
-
-
 
 {% block title %}Foto Evento: {{ event.name }}{% endblock %}
 
@@ -15,8 +12,13 @@
         <div class="row">
             {% for photo in photos %}
             <div class="col-md-3 col-sm-6">
-                <div class="card mb-3">
-                    <img src="{{ photo.file_path.url }}" class="card-img-top" alt="{{ photo.original_name }}">
+                <div class="card mb-3 shadow-sm">
+                    <img src="{{ photo.file_path.url }}"
+                         class="card-img-top"
+                         alt="{{ photo.original_name }}"
+                         oncontextmenu="return false;"
+                         draggable="false"
+                         style="pointer-events: none; user-select: none;">
                     <div class="card-body text-center">
                         <p>{{ photo.original_name }}</p>
                         <p><strong>€{{ event.price_per_photo }}</strong></p>
@@ -40,17 +42,17 @@
     </form>
 
     {% if cart_photos %}
-    <div class="mt-4 p-3 bg-light border">
+    <div class="mt-4 p-3 bg-light border rounded shadow-sm">
         <h3>🛒 Riepilogo Foto Selezionate</h3>
-        <ul>
+        <ul class="list-unstyled">
             {% for photo in cart_photos %}
-            <li>
-                <img src="{{ photo.photo_url }}" width="50" class="rounded">
-                {{ photo.event_name }} - €{{ photo.price|floatformat:2 }}
+            <li class="mb-2 d-flex align-items-center">
+                <img src="{{ photo.photo_url }}" width="50" class="rounded me-2" style="pointer-events: none;">
+                {{ photo.event_name }} – €{{ photo.price|floatformat:2 }}
             </li>
             {% endfor %}
         </ul>
-        <p><strong>Totale: €{{ cart_total|floatformat:2 }}</strong></p>
+        <p class="fw-bold">Totale: €{{ cart_total|floatformat:2 }}</p>
         <a href="{% url 'cart_view' %}" class="btn btn-warning">🛒 Vai al Carrello</a>
     </div>
     {% endif %}
