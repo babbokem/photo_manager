@@ -825,42 +825,16 @@ def privacy_policy_all(request):
 
 
 
-
-
-
-
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.urls import reverse
-from django.conf import settings
-from .models import Event
-
 @login_required
 def send_all_events_email(request):
     if request.method == "POST":
         recipients = request.POST.get("recipients")
         recipient_list = [email.strip() for email in recipients.split(',') if email.strip()]
 
-        events = Event.objects.all()
+        # ✅ Link diretto alla privacy policy (che poi reindirizza a tutti gli eventi)
+        all_events_url = request.build_absolute_uri(reverse("privacy_policy_all"))
 
-        all_event_data = []
-        for event in events:
-            foto_anteprima = event.photos.first().file_path.url if event.photos.exists() else "/static/images/default_event.jpg"
-            link_privacy = request.build_absolute_uri(reverse("privacy_policy_all"))
-            all_event_data.append({
-                "name": event.name,
-                "description": event.description,
-                "foto_anteprima": request.build_absolute_uri(foto_anteprima),
-                "link_privacy": link_privacy,
-            })
-
+        # ✅ Icone social
         social_icons = {
             "logo": request.build_absolute_uri(settings.STATIC_URL + "icon/logo.png"),
             "whatsapp": request.build_absolute_uri(settings.STATIC_URL + "icon/whatsapp.png"),
@@ -869,8 +843,9 @@ def send_all_events_email(request):
             "email": request.build_absolute_uri(settings.STATIC_URL + "icon/email.png"),
         }
 
+        # ✅ Rendering della mail con un solo pulsante
         html_content = render_to_string("all_events_email.html", {
-            "events": all_event_data,
+            "all_events_url": all_events_url,
             "social_icons": social_icons,
         })
 
@@ -878,7 +853,7 @@ def send_all_events_email(request):
 
         try:
             email = EmailMultiAlternatives(
-                subject="📸 Le tue Gallerie Foto sono pronte!",
+                subject="📸 Tutte le tue Gallerie Foto sono pronte!",
                 body=text_content,
                 from_email=settings.EMAIL_HOST_USER,
                 to=recipient_list,
@@ -893,6 +868,7 @@ def send_all_events_email(request):
         return redirect('dashboard')
 
     return redirect('dashboard')
+
 
 
 def event_detail(request, access_code):
