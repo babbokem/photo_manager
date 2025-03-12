@@ -27,7 +27,7 @@ import logging
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-
+from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
 
@@ -35,87 +35,60 @@ logger = logging.getLogger(__name__)
 
 
 from django.core.mail import send_mail
-
 def download_zip(request, filename):
-    # Percorso completo del file ZIP nella cartella temporanea
-    zip_path = os.path.join(settings.TEMP_ZIPS_DIR, filename)
+    zip_path = f"temp/{filename}" if settings.USE_S3 else os.path.join(settings.TEMP_ZIPS_DIR, filename)
+
+    if settings.USE_S3:
+        if default_storage.exists(zip_path):
+            return redirect(f"{settings.MEDIA_URL}{zip_path}")
+        raise Http404("Il file richiesto non esiste su S3.")
+    else:
+        if not os.path.exists(zip_path):
+            raise Http404("Il file richiesto non esiste.")
+        response = FileResponse(open(zip_path, 'rb'), as_attachment=True)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        os.remove(zip_path)  # Rimuove il file dopo il download
+        return response
+
+### **Funzione di checkout con ZIP generato su S3**
 
 
-    if not os.path.exists(zip_path):
-        raise Http404("Il file richiesto non esiste.")
 
-    # Restituisce il file come risposta
-    response = FileResponse(open(zip_path, 'rb'), as_attachment=True)
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-
-    # Cancella il file dopo il download
-    
-    
-    try:
-        os.remove(zip_path)
-    except Exception as e:
-        print(f"Errore durante la cancellazione del file {zip_path}: {e}")
-
-    return response
-
-    return response
-
+### **Funzione di checkout con ZIP generato su S3**
 def checkout_success(request):
-    # Recupera gli ID delle foto acquistate e l'email dalla sessione
     photo_ids = request.session.get('purchased_photo_ids', [])
     customer_email = request.session.get('customer_email', None)
 
     if not photo_ids or not customer_email:
         return JsonResponse({'error': 'Nessun acquisto trovato'}, status=400)
 
-    # Recupera le foto acquistate
     photos = Photo.objects.filter(id__in=photo_ids)
-
-    # Crea un file ZIP in memoria
     zip_buffer = BytesIO()
+    
     with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
         for photo in photos:
-            # Aggiungi ogni foto al file ZIP
-            file_path = photo.file_path.path
             file_name = os.path.basename(photo.file_path.name)
-            zip_file.write(file_path, arcname=file_name)
+            with default_storage.open(photo.file_path.name, 'rb') as f:
+                zip_file.writestr(file_name, f.read())
 
-    # Salva il file ZIP in una directory temporanea
     zip_filename = f"acquisto_{now().strftime('%Y%m%d%H%M%S')}.zip"
-    zip_path = os.path.join(settings.TEMP_ZIPS_DIR, zip_filename)
-    with open(zip_path, 'wb') as f:
-        f.write(zip_buffer.getvalue())
+    zip_path = f"temp/{zip_filename}" if settings.USE_S3 else os.path.join(settings.TEMP_ZIPS_DIR, zip_filename)
 
-    # Costruisci il link per il download
-    zip_url = request.build_absolute_uri(reverse('download_zip', args=[zip_filename])).replace("http://", "https://")
+    if settings.USE_S3:
+        default_storage.save(zip_path, ContentFile(zip_buffer.getvalue()))
+        zip_url = f"{settings.MEDIA_URL}{zip_path}"
+    else:
+        with open(zip_path, 'wb') as f:
+            f.write(zip_buffer.getvalue())
+        zip_url = request.build_absolute_uri(reverse('download_zip', args=[zip_filename])).replace("http://", "https://")
+
+    send_mail("Le tue foto acquistate", f"Scaricale qui: {zip_url}", settings.EMAIL_HOST_USER, [customer_email])
+    request.session.pop('purchased_photo_ids', None)
+    request.session.pop('customer_email', None)
+    
+    return render(request, 'checkout_success.html', {'zip_url': zip_url})
 
 
-
-    # Crea il contenuto dell'email
-    subject = "Le tue foto acquistate"
-    message = (
-        "Grazie per il tuo acquisto!\n\n"
-        "Puoi scaricare tutte le tue foto al seguente link:\n"
-        f"{zip_url}\n\n"
-        "Il link sarà valido per un periodo limitato.\n"
-        "Grazie per averci scelto!"
-    )
-
-    try:
-        # Invia l'email al cliente
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [customer_email],
-            fail_silently=False,
-        )
-        # Pulisci la sessione
-        request.session.pop('purchased_photo_ids', None)
-        request.session.pop('customer_email', None)
-        return render(request, 'checkout_success.html', {'zip_url': zip_url})
-    except Exception as e:
-        return JsonResponse({'error': f'Errore durante l\'invio dell\'email: {e}'}, status=500)
 
 
 
@@ -137,32 +110,24 @@ def create_checkout_session(request):
         try:
             data = json.loads(request.body)
             photo_ids = data.get('photo_ids', [])
-            customer_email = data.get('email', '')  # Email del cliente
+            customer_email = data.get('email', '')
 
             if not photo_ids:
                 return JsonResponse({'error': 'Nessuna foto selezionata'}, status=400)
 
-            # Salva nella sessione
             request.session['purchased_photo_ids'] = photo_ids
             request.session['customer_email'] = customer_email
 
-            # Recupera le foto dal database
             photos = Photo.objects.filter(id__in=photo_ids)
-            line_items = [
-                {
-                    'price_data': {
-                        'currency': 'eur',
-                        'unit_amount': int(photo.event.price_per_photo * 100),  # Prezzo in centesimi
-                        'product_data': {
-                            'name': photo.original_name,
-                        },
-                    },
-                    'quantity': 1,
-                }
-                for photo in photos
-            ]
+            line_items = [{
+                'price_data': {
+                    'currency': 'eur',
+                    'unit_amount': int(photo.event.price_per_photo * 100),
+                    'product_data': {'name': photo.original_name},
+                },
+                'quantity': 1,
+            } for photo in photos]
 
-            # Crea la sessione di checkout con Stripe
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=line_items,
@@ -172,14 +137,12 @@ def create_checkout_session(request):
             )
 
             return JsonResponse({'id': checkout_session.id})
-        
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Errore nella decodifica del JSON'}, status=400)
         except stripe.error.StripeError as e:
             return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Metodo non consentito'}, status=405)
-
 
 
 
@@ -472,10 +435,14 @@ def purchase_photos(request, event_id):
 @login_required
 def delete_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    photos = event.photos.all()
+
+    for photo in photos:
+        default_storage.delete(photo.file_path.name)
+
     event.delete()
-    messages.success(request, f"L'evento '{event.name}' è stato eliminato con successo.")
-    next_url = request.GET.get('next', 'dashboard')
-    return redirect(next_url)
+    messages.success(request, "Evento e foto eliminati con successo.")
+    return redirect('dashboard')
 
 
 
@@ -537,47 +504,31 @@ def upload_photos(request, event_id):
 
 
 
+
+
 @login_required
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == 'POST' and request.FILES.get('zip_file'):
         zip_file = request.FILES['zip_file']
+        zip_path = f"event_zips/{event.id}/{zip_file.name}"
+        saved_zip_path = default_storage.save(zip_path, ContentFile(zip_file.read()))
 
-        # Salva il file ZIP nella cartella persistente di Railway
-        zip_path = os.path.join(settings.MEDIA_ROOT, 'event_zips', str(event.id), zip_file.name)
-        os.makedirs(os.path.dirname(zip_path), exist_ok=True)  # Crea la cartella se non esiste
-        print(f"Salvando ZIP in: {zip_path}")  # Debug
+        try:
+            with default_storage.open(saved_zip_path, 'rb') as f:
+                with zipfile.ZipFile(f, 'r') as zip_ref:
+                    for file_name in zip_ref.namelist():
+                        if file_name.lower().endswith(('jpg', 'jpeg', 'png')):
+                            image_data = zip_ref.read(file_name)
+                            final_path = f"event_photos/{event.id}/{os.path.basename(file_name)}"
+                            saved_image_path = default_storage.save(final_path, ContentFile(image_data))
+                            Photo.objects.create(event=event, file_path=saved_image_path, original_name=os.path.basename(file_name))
+        except zipfile.BadZipFile:
+            messages.error(request, "Il file caricato non è un archivio ZIP valido.")
+            return redirect('event_photos', event_id=event.id)
 
-        with open(zip_path, 'wb') as f:
-            f.write(zip_file.read())  # Salva il file ZIP nella cartella
-
-        # Scompatta il file ZIP direttamente nella cartella persistente
-        extracted_folder = os.path.join(settings.MEDIA_ROOT, 'event_photos', str(event.id))  # Percorso per le foto scompattate
-        os.makedirs(extracted_folder, exist_ok=True)  # Crea la cartella per le foto estratte se non esiste
-        print(f"Scompattando in: {extracted_folder}")  # Debug
-
-        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-            for file_name in zip_ref.namelist():
-                print(f"Verifica file: {file_name}")  # Debug
-                if file_name.lower().endswith(('png', 'jpg', 'jpeg')):  # Verifica se è un'immagine
-                    extracted_file_path = os.path.join(extracted_folder, os.path.basename(file_name))
-                    print(f"Estraendo: {extracted_file_path}")  # Debug
-
-                    # Leggi il contenuto del file dall'archivio
-                    image_data = zip_ref.read(file_name)
-
-                    # Crea un percorso per salvare su S3 o local
-                    filename = f"event_photos/{event.id}/{os.path.basename(file_name)}"
-
-                    # Salva il file usando lo storage predefinito (S3 se USE_S3=true)
-                    saved_path = default_storage.save(filename, BytesIO(image_data))
-
-                    # Salva nel database
-                    Photo.objects.create(event=event, file_path=saved_path, original_name=os.path.basename(file_name))
-
-
-        messages.success(request, "Foto caricate con successo dal file ZIP!")
+        messages.success(request, "Foto caricate con successo su S3!")
         return redirect('event_photos', event_id=event.id)
 
     return render(request, 'upload_zip.html', {'event': event})
@@ -615,34 +566,21 @@ def access_event(request):
 
 @login_required
 def cart(request):
-    cart_data = request.session.get("cart", {})  # Recupera il carrello dalla sessione
-
-    print("DEBUG - Contenuto del carrello in cart():", cart_data)  # Stampa il carrello per il debug
-
+    cart_data = request.session.get("cart", {})
     photos = []
     total_amount = 0
 
-    if not isinstance(cart_data, dict):
-        cart_data = {}  # Assicura che sia un dizionario
-
     for event_id, items in cart_data.items():
         for item in items:
-            photo_id = item.get("photo_id")
-            event_name = item.get("event_name")
-            price = float(item.get("price", 0))  # Converti in float per evitare errori
-
-            # Recupera la foto dal database
-            photo = Photo.objects.filter(id=photo_id).first()
+            photo = Photo.objects.filter(id=item["photo_id"]).first()
             if photo:
                 photos.append({
                     "photo_id": photo.id,
                     "photo_url": photo.file_path.url,
-                    "event_name": event_name,
-                    "price": price,
+                    "event_name": photo.event.name,
+                    "price": float(photo.event.price_per_photo),
                 })
-                total_amount += price
-
-    print("DEBUG - Foto nel carrello:", photos)  # Stampa il contenuto del carrello
+                total_amount += float(photo.event.price_per_photo)
 
     return render(request, 'cart.html', {
         'photos': photos,
@@ -650,7 +588,6 @@ def cart(request):
         'total_amount': total_amount,
         'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY
     })
-
 
 
 
