@@ -214,6 +214,8 @@ def is_admin(user):
 
 @login_required
 def dashboard(request):
+    print("✅ ENTRATO NELLA VIEW dashboard")
+
     query = request.GET.get('q', '')  # Usa una stringa vuota come valore di default se 'q' non è presente
     events = Event.objects.all()
 
@@ -509,11 +511,21 @@ def upload_photos(request, event_id):
 @login_required
 def upload_zip(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    print("✅ ENTRATO NELLA VIEW upload_zip")  # <-- Terminale
+    messages.info(request, "👀 Sei entrato nella funzione upload_zip")  # <-- Browser
 
     if request.method == 'POST' and request.FILES.get('zip_file'):
         zip_file = request.FILES['zip_file']
         zip_path = f"event_zips/{event.id}/{zip_file.name}"
+        
+        
+        
+        print("🌍 STORAGE IN USO:", default_storage.__class__)  # <<<<< QUI
+        
+        
+        
         saved_zip_path = default_storage.save(zip_path, ContentFile(zip_file.read()))
+          
 
         try:
             with default_storage.open(saved_zip_path, 'rb') as f:
@@ -524,6 +536,7 @@ def upload_zip(request, event_id):
                             final_path = f"event_photos/{event.id}/{os.path.basename(file_name)}"
                             saved_image_path = default_storage.save(final_path, ContentFile(image_data))
                             Photo.objects.create(event=event, file_path=saved_image_path, original_name=os.path.basename(file_name))
+                            
         except zipfile.BadZipFile:
             messages.error(request, "Il file caricato non è un archivio ZIP valido.")
             return redirect('event_photos', event_id=event.id)
@@ -664,6 +677,8 @@ def list_all_files(request):
 
 
 def process_zip_file(self):
+    print("✅ ENTRATO NELLA VIEW process_zip")
+
     """
     Scompatta il file ZIP nella directory associata all'evento e crea oggetti Photo.
     """
@@ -708,7 +723,7 @@ def process_zip_file(self):
         logger.error(f"Errore durante l'estrazione del file ZIP: {e}")
 
 
-# event_photos/views.py
+
 
 def view_foto(request):
     # Percorso della cartella in cui sono salvate le foto

@@ -124,33 +124,32 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Configurazione dei file media
-# Sempre definito, anche se non usato con S3
+# MEDIA_ROOT è usato per percorsi interni anche se si usa S3
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Configurazione S3
-# Configurazione S3 (attiva solo se USE_S3 è true)
-if os.getenv("USE_S3", "False").lower() == "true":
+USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
+
+if USE_S3:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'eu-west-1')
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
     AWS_QUERYSTRING_AUTH = False
     AWS_DEFAULT_ACL = 'public-read'
-    print("🧪 S3 CONFIGURATO")
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    print("✅ STO USANDO S3")
 else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    print("📁 STO USANDO STORAGE LOCALE")
 
 
 
 
-#else:
-#    MEDIA_URL = '/media/'
-#    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Percorso locale per lo sviluppo
+
+
 
 # Definizione delle sotto-cartelle dentro MEDIA_ROOT
 EVENT_ZIPS_DIR = os.path.join(MEDIA_ROOT, 'event_zips')  # ZIP caricati
@@ -216,3 +215,6 @@ CACHES = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
+print("📦 DEFAULT_FILE_STORAGE =", DEFAULT_FILE_STORAGE)

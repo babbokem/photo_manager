@@ -86,48 +86,34 @@ class Event(models.Model):
             self.process_zip_file()
 
     def process_zip_file(self):
-        """
-        Scompatta il file ZIP nella directory associata all'evento e crea oggetti Photo.
-        """
+        from django.core.files.base import ContentFile
+        from django.core.files.storage import default_storage
+
         if not self.zip_file:
-            print("Nessun file ZIP presente per l'evento.")  # Print aggiunto
+            print("Nessun file ZIP presente per l'evento.")
             return
-
         try:
-            zip_path = self.zip_file.path
-            extract_to = self.get_extracted_path()
+            with self.zip_file.open('rb') as zip_file_obj:
+                with zipfile.ZipFile(zip_file_obj) as zip_ref:
+                    for file_name in zip_ref.namelist():
+                        if file_name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                            image_data = zip_ref.read(file_name)
+                            image_name = os.path.basename(file_name)
+                            final_path = f"event_photos/event_{self.id}/{image_name}"
 
-            # Assicurati che la directory esista
-            os.makedirs(extract_to, exist_ok=True)
+                            saved_path = default_storage.save(final_path, ContentFile(image_data))
 
-            print(f"Estrazione ZIP in: {extract_to}")  # Print aggiunto
-
-            # Estrai i file dal file ZIP
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                zip_ref.extractall(extract_to)
-
-            print(f"File ZIP {self.zip_file.name} estratto in {extract_to}")  # Print aggiunto
-
-            # Filtra solo immagini e crea oggetti Photo
-            valid_extensions = ('.jpg', '.jpeg', '.png')
-            for root, _, files in os.walk(extract_to):
-                for file_name in files:
-                    if file_name.lower().endswith(valid_extensions):
-                        relative_path = os.path.relpath(
-                            os.path.join(root, file_name), settings.MEDIA_ROOT
-                        )
-                        print(f"Salvando foto: {file_name}")  # Print aggiunto
-                        Photo.objects.create(
-                            event=self,
-                            file_path=relative_path,
-                            original_name=file_name
-                        )
-                        print(f"Foto {file_name} salvata nel database.")  # Print aggiunto
+                            Photo.objects.create(
+                                event=self,
+                                file_path=saved_path,
+                                original_name=image_name
+                            )
+                            print(f"✅ Salvata su storage: {saved_path}")
 
         except zipfile.BadZipFile:
-            print(f"Il file {self.zip_file.name} non è un archivio ZIP valido.")  # Print aggiunto
+            print("❌ Il file caricato non è un archivio ZIP valido.")
         except Exception as e:
-            print(f"Errore durante l'estrazione del file ZIP: {e}")  # Print aggiunto
+            print(f"❌ Errore durante l'estrazione del file ZIP: {e}")
 
     def get_extracted_path(self):
         """
