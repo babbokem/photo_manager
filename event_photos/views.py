@@ -577,7 +577,7 @@ def access_event(request):
 
 
 
-@login_required
+
 def cart(request):
     cart_data = request.session.get("cart", {})
     photos = []
