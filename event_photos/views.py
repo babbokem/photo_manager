@@ -676,6 +676,17 @@ def list_all_files(request):
 
 
 
+
+
+
+def test_storage(request):
+    return HttpResponse(f"""
+        ✅ USE_S3: {getattr(settings, 'USE_S3', 'NON TROVATO')}<br>
+        📦 STORAGE IN USO: {default_storage.__class__}<br>
+        📸 MEDIA_URL: {settings.MEDIA_URL}
+    """)
+
+
 def process_zip_file(self):
     print("✅ ENTRATO NELLA VIEW process_zip")
 

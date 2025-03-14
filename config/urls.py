@@ -37,6 +37,10 @@ urlpatterns = [
     path('list-media/', views.list_media_files, name='list_media_files'),
     path('list-all-files/', views.list_all_files, name='list_all_files'),
     path('view-foto/', views.view_foto, name='view_foto'),
+    path("test-storage/", views.test_storage, name="test_storage"),
+
+    
+
     
 
     # ✅ Servire file STATICI e MEDIA in produzione

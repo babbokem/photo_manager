@@ -1,41 +1,33 @@
 import uuid
 import os
 import zipfile
-import shutil
-from pathlib import Path
+from datetime import timedelta
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
-import logging
-from datetime import timedelta
 from django.urls import reverse
-
-
+from django.core.files.base import ContentFile
+import logging
 
 logger = logging.getLogger(__name__)
 
+
 def validate_zip_file(value):
-    """
-    Valida che il file caricato sia un archivio ZIP.
-    """
     if not value.name.endswith('.zip'):
         raise ValidationError("Il file caricato deve essere un archivio ZIP.")
 
+
 def upload_to_event(instance, filename):
-    """
-    Restituisce il percorso personalizzato per il caricamento delle foto.
-    """
     return f"event_photos/event_{instance.event.id}/{filename}"
 
+
 def generate_unique_access_code():
-    """
-    Genera un codice di accesso univoco.
-    """
     while True:
         code = uuid.uuid4().hex[:10]
         if not Event.objects.filter(access_code=code).exists():
             return code
+
 
 class Event(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nome Evento")
@@ -58,92 +50,65 @@ class Event(models.Model):
     )
 
     def get_absolute_url(self):
-        """
-        Restituisce l'URL della pagina dell'evento per visualizzare e acquistare le foto.
-        """
         return reverse('event_detail', kwargs={'access_code': self.access_code})
 
     def __str__(self):
         return self.name
-    
 
     def save(self, *args, **kwargs):
-        """
-        Override del metodo save per impostare la data di scadenza e processare i file ZIP.
-        """
         if not self.expiry_date:
             self.expiry_date = now().date() + timedelta(days=30)
 
-        # Genera codice univoco se non è presente
         if not self.access_code:
             self.access_code = generate_unique_access_code()
 
         super().save(*args, **kwargs)
 
-        # Scompatta il file ZIP se presente e non ancora elaborato
-        if self.zip_file and not os.path.exists(self.get_extracted_path()):
-            print(f"ZIP trovato per l'evento: {self.name}. Inizio estrazione.")  # Print aggiunto
+        if self.zip_file and not self.photos.exists():
+            print(f"ZIP trovato per l'evento: {self.name}. Inizio estrazione.")
             self.process_zip_file()
 
     def process_zip_file(self):
-        from django.core.files.base import ContentFile
-        from django.core.files.storage import default_storage
-
-        if not self.zip_file:
-            print("Nessun file ZIP presente per l'evento.")
-            return
         try:
+            from django.core.files.storage import default_storage  # IMPORT CORRETTO
+            print("💾 SONO DENTRO MODEL")
+            print("🌍 STORAGE IN USO:", default_storage.__class__)
+
+            if not self.zip_file:
+                print("Nessun file ZIP presente per l'evento.")
+                return
+
             with self.zip_file.open('rb') as zip_file_obj:
                 with zipfile.ZipFile(zip_file_obj) as zip_ref:
                     for file_name in zip_ref.namelist():
                         if file_name.lower().endswith(('.jpg', '.jpeg', '.png')):
                             image_data = zip_ref.read(file_name)
                             image_name = os.path.basename(file_name)
-                            final_path = f"event_photos/event_{self.id}/{image_name}"
 
-                            saved_path = default_storage.save(final_path, ContentFile(image_data))
+                            photo = Photo(event=self, original_name=image_name)
+                            photo.file_path.save(image_name, ContentFile(image_data))
+                            photo.save()
 
-                            Photo.objects.create(
-                                event=self,
-                                file_path=saved_path,
-                                original_name=image_name
-                            )
-                            print(f"✅ Salvata su storage: {saved_path}")
+                            print(f"✅ Salvata su storage: {photo.file_path.name}")
 
-        except zipfile.BadZipFile:
-            print("❌ Il file caricato non è un archivio ZIP valido.")
         except Exception as e:
-            print(f"❌ Errore durante l'estrazione del file ZIP: {e}")
-
-    def get_extracted_path(self):
-        """
-        Restituisce il percorso della directory in cui scompattare i file ZIP.
-        """
-        return Path(settings.MEDIA_ROOT) / 'event_photos' / f"event_{self.id}"
+            print(f"❌ ERRORE GLOBALE IN process_zip_file: {e}")
 
     def delete(self, *args, **kwargs):
-        """
-        Cancella il file ZIP e le immagini associate quando l'evento viene eliminato.
-        """
         try:
-            # Cancella il file ZIP se esiste
-            if self.zip_file and os.path.exists(self.zip_file.path):
-                os.remove(self.zip_file.path)
-                print(f"ZIP eliminato: {self.zip_file.path}")  # Print aggiunto
+            from django.core.files.storage import default_storage
+            if self.zip_file:
+                default_storage.delete(self.zip_file.name)
+                print(f"ZIP eliminato da storage: {self.zip_file.name}")
 
-            # Cancella la cartella delle immagini dell'evento
-            event_folder = os.path.join(settings.MEDIA_ROOT, f'event_photos/event_{self.id}')
-            if os.path.exists(event_folder):
-                shutil.rmtree(event_folder)
-                print(f"Cartella immagini eliminata: {event_folder}")  # Print aggiunto
+            for photo in self.photos.all():
+                photo.delete()
 
         except Exception as e:
-            print(f"Errore durante l'eliminazione dell'evento: {e}")  # Print aggiunto
+            print(f"Errore durante l'eliminazione dell'evento: {e}")
 
         super().delete(*args, **kwargs)
 
-    def __str__(self):
-        return self.name
 
 class Photo(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="photos")
@@ -154,24 +119,18 @@ class Photo(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
     def save(self, *args, **kwargs):
-        """
-        Memorizza il nome originale del file se non già presente.
-        """
         if not self.original_name:
             self.original_name = os.path.basename(self.file_path.name)
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        """
-        Elimina il file fisico quando la foto viene eliminata.
-        """
         try:
-            if self.file_path and os.path.exists(self.file_path.path):
-                os.remove(self.file_path.path)
-                print(f"Foto eliminata: {self.file_path.path}")  # Print aggiunto
-
+            from django.core.files.storage import default_storage
+            if self.file_path:
+                default_storage.delete(self.file_path.name)
+                print(f"Foto eliminata da storage: {self.file_path.name}")
         except Exception as e:
-            print(f"Errore durante l'eliminazione della foto: {e}")  # Print aggiunto
+            print(f"Errore durante l'eliminazione della foto: {e}")
 
         super().delete(*args, **kwargs)
 

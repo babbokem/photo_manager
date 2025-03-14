@@ -63,6 +63,8 @@ urlpatterns = [
     path('send_all_events_email/', views.send_all_events_email, name='send_all_events_email'),
     path('all-events/', views.all_events, name='all_events'),
     path('privacy-policy-all/', views.privacy_policy_all, name='privacy_policy_all'),
+    
+    
 
 ]
 
