@@ -154,8 +154,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'massimiliano.cima@gmail.com'
 EMAIL_HOST_PASSWORD = 'efys itmu rlyr gutj'
 
-STRIPE_PUBLIC_KEY = "pk_test_..."
-STRIPE_SECRET_KEY = "sk_test_..."
+STRIPE_PUBLIC_KEY = "pk_test_51PWGkOP6vStwNJaKuajaYtnldX0jAwFSF5MGVOBwR9vorQ1a93qtPTU8chavspfc2Mjd6HAsTqj1k4t0kgeeqniW00FzmTo9zo"
+STRIPE_SECRET_KEY = "sk_test_51PWGkOP6vStwNJaKkAqFIsSuLlMXtw6zsBuqo5LyUqnzZ6zOmcKYwpNuNYValyuS4qna4YcGh5mBmmD3wRQEIUKg00DlzmWgIx"
 
 CACHES = {
     'default': {
